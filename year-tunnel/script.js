@@ -8,66 +8,64 @@
    rotated so its bottom edge faces the ring's center (like numbers
    around a clock, or petals on a flower).
 
-   Ring 0 = the most recent year (e.g. 2026) = the tunnel entrance,
-   largest and closest. Ring 1 = one year back = a bit smaller/further.
-   And so on, receding toward a vanishing point in the center.
+   Ring 0 = the most recent year (e.g. 2026) = the tunnel entrance.
+   Ring 1 = one year back, etc, receding toward a vanishing point.
 
-   As the user scrolls, we compute a single continuous number called
-   "depth" (0, 1, 2, 3...) representing how far into the tunnel the
-   viewer has walked. Every ring's size/position/opacity is a function
-   of (ringIndex - depth) — its distance from the viewer right now.
+   Scroll position maps to a continuous "depth" number. Every ring's
+   apparent size/opacity is a function of (ringIndex - depth) — its
+   distance from the viewer right now. Every ring reaches the SAME
+   peak size at the moment it's "in focus" (distance == focalOffset),
+   so ring N always ends up exactly where ring N-1 started, and the
+   very first ring at rest looks identical to how the next ring will
+   look when it takes over — nothing is uniquely oversized at start.
 
-   Scrolling down increases depth → everything grows/approaches → the
-   front-most ring eventually grows past the viewer and fades out →
-   the next ring has, by design, arrived at exactly the size/position
-   the previous front ring started at. Scrolling up does the reverse.
+   On top of that positional animation, every ring also has a slow,
+   continuous spin (alternating direction ring to ring) that runs at
+   all times, independent of scroll.
    ===================================================================== */
 
 const CONFIG = {
-  // How much scroll distance (in "viewport heights") it takes to walk
-  // through exactly one year. Bigger = slower, more gradual scroll.
+  // Scroll distance (in viewport heights) to walk through one year.
   vhPerYear: 100,
 
-  // --- Perspective math tuning ---
-  // A ring's "distance from camera" is (ringIndex - depth + focalOffset).
-  // focalOffset keeps that value from ever hitting exactly zero (which
-  // would mean infinite scale) and sets how large a ring appears right
-  // as it's "at the entrance."
-  focalOffset: 0.55,
-
-  // Scale = scaleConstant / distance. Bigger scaleConstant = bigger
-  // rings overall.
+  // --- Perspective math ---
+  // distance = (ringIndex - depth + focalOffset)
+  // Every ring hits its own peak size when distance == focalOffset.
+  // Raising this number makes every ring's peak size smaller/less
+  // zoomed (this is what keeps the resting/entrance view from feeling
+  // too cropped-in).
+  focalOffset: 1.5,
   scaleConstant: 1.0,
-
-  // Hard cap so a ring can never explode to a silly size while it's
-  // passing very close to the camera (opacity should already have
-  // faded it out before this becomes visible, but this is a safety net).
   maxScale: 3.2,
 
-  // Base (scale = 1) sizing.
   baseRadiusPx: 230,
-  baseImgWidthPx: 78,
-  baseImgHeightPx: 104,
+  minRadiusPx: 40,      // keeps the very center of the screen always clear
 
-  // Opacity fades out a ring in TWO situations:
-  // 1) It's passing very close to / has passed the camera (near fade)
-  // 2) It's too deep in the tunnel to matter (far fade)
-  nearFadeFullyOpaqueAt: 0.55,   // distance >= this -> fully opaque
-  nearFadeInvisibleAt: 0.0,      // distance <= this -> fully transparent
-  farFadeStartsAt: 3.0,          // distance <= this -> still fully opaque
-  farFadeEndsAt: 5.0,            // distance >= this -> fully transparent
+  // A photo's WIDTH (tangential/circumferential dimension) is capped
+  // at this, but shrinks automatically when a ring has more photos —
+  // see baselinePhotoWidth(). Height is derived per-photo from its own
+  // true aspect ratio, never cropped.
+  maxPhotoWidthPx: 100,
+  minPhotoWidthPx: 14,
+  ringFillFraction: 0.82, // <1 leaves a gap between adjacent photos
 
-  // Small per-ring rotational offset (degrees) purely for visual
-  // character, so rings don't all align in perfectly straight radial
-  // spokes. Set to 0 to disable.
+  nearFadeFullyOpaqueAt: 1.5,
+  nearFadeInvisibleAt: 0.0,
+  farFadeStartsAt: 3.0,
+  farFadeEndsAt: 5.0,
+
   perRingRotationOffsetDeg: 6,
+
+  // Continuous idle spin, always running. Alternates direction by ring
+  // index (even = clockwise, odd = counterclockwise).
+  spinDegPerSecond: 3,
 };
 
-let yearsData = [];      // loaded from data/dataset.json, index 0 = newest
-let ringEls = [];        // { container, photos: [{el, angleDeg}] }
+let yearsData = [];
+let ringEls = [];        // { container, year, spinDir, photos: [{el, img, angleDeg, aspect, aspectKnown}] }
 let currentDepth = 0;
-let targetScrollY = 0;
-let rafPending = false;
+let lastFrameTime = null;
+let spinAccumDeg = [];   // per-ring accumulated spin offset (degrees), grows every frame
 
 const stage = document.getElementById('tunnel-stage');
 const yearLabel = document.getElementById('year-label-text');
@@ -80,17 +78,15 @@ const spacer = document.getElementById('scroll-spacer');
 async function init() {
   const res = await fetch('data/dataset.json');
   const data = await res.json();
-  yearsData = data.years; // [{year, photos: [{file, hex, palette}]}, ...] newest first
+  yearsData = data.years; // newest first
 
   buildRings();
   sizeScrollSpacer();
-  updateTunnel(); // initial paint
 
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', () => {
-    sizeScrollSpacer();
-    updateTunnel();
-  });
+  window.addEventListener('resize', sizeScrollSpacer);
+
+  lastFrameTime = performance.now();
+  requestAnimationFrame(frameLoop);
 }
 
 function buildRings() {
@@ -99,8 +95,9 @@ function buildRings() {
     ring.className = 'ring';
     ring.dataset.year = yearEntry.year;
 
+    const n = yearEntry.photos.length;
+
     const photoEls = yearEntry.photos.map((photo, photoIndex) => {
-      const n = yearEntry.photos.length;
       const angleDeg = (360 / n) * photoIndex
         + ringIndex * CONFIG.perRingRotationOffsetDeg;
 
@@ -108,18 +105,40 @@ function buildRings() {
       wrap.className = 'ring-photo';
 
       const img = document.createElement('img');
-      img.src = 'photos/' + encodeURIComponent(photo.file);
       img.alt = photo.file + ' (' + yearEntry.year + ')';
       img.loading = 'lazy';
-      wrap.appendChild(img);
 
+      const photoState = {
+        el: wrap,
+        img,
+        angleDeg,
+        aspect: 1,        // width / height — placeholder until the real
+        aspectKnown: false, // image loads and we learn its true ratio
+      };
+
+      img.addEventListener('load', () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          photoState.aspect = img.naturalWidth / img.naturalHeight;
+          photoState.aspectKnown = true;
+        }
+      });
+
+      img.src = 'photos/' + encodeURIComponent(photo.file);
+
+      wrap.appendChild(img);
       ring.appendChild(wrap);
 
-      return { el: wrap, angleDeg };
+      return photoState;
     });
 
     stage.appendChild(ring);
-    ringEls.push({ container: ring, photos: photoEls, year: yearEntry.year });
+    ringEls.push({
+      container: ring,
+      photos: photoEls,
+      year: yearEntry.year,
+      spinDir: (ringIndex % 2 === 0) ? 1 : -1, // even index = clockwise
+    });
+    spinAccumDeg.push(0);
   });
 }
 
@@ -132,20 +151,27 @@ function pixelsPerYear() {
 }
 
 function sizeScrollSpacer() {
-  // +1 extra "year" of scroll room at the end so the final ring has
-  // space to fully fade out rather than hitting the scroll limit abruptly.
   const totalYears = yearsData.length + 1;
   spacer.style.height = (totalYears * pixelsPerYear()) + 'px';
 }
 
-function onScroll() {
-  if (!rafPending) {
-    rafPending = true;
-    requestAnimationFrame(() => {
-      updateTunnel();
-      rafPending = false;
-    });
-  }
+// -----------------------------------------------------------------
+// Continuous animation loop — runs every frame regardless of scroll,
+// so the idle spin never stops.
+// -----------------------------------------------------------------
+
+function frameLoop(now) {
+  const deltaSec = Math.min((now - lastFrameTime) / 1000, 0.1); // clamp for tab-switch gaps
+  lastFrameTime = now;
+
+  ringEls.forEach((ring, i) => {
+    spinAccumDeg[i] += CONFIG.spinDegPerSecond * ring.spinDir * deltaSec;
+  });
+
+  currentDepth = window.scrollY / pixelsPerYear();
+  updateTunnel();
+
+  requestAnimationFrame(frameLoop);
 }
 
 // -----------------------------------------------------------------
@@ -176,9 +202,18 @@ function opacityForDistance(dist) {
   return 0;
 }
 
-function updateTunnel() {
-  currentDepth = window.scrollY / pixelsPerYear();
+// Width (tangential dimension) for a photo in a ring of n photos, at
+// the "reference" scale of 1.0 — computed from baseRadiusPx so caps
+// apply consistently, then scaled linearly at the call site alongside
+// everything else in the ring (so size grows/shrinks proportionally
+// with depth, not quadratically).
+function baselinePhotoWidth(n) {
+  const circumference = 2 * Math.PI * CONFIG.baseRadiusPx;
+  const share = (circumference / n) * CONFIG.ringFillFraction;
+  return clamp(share, CONFIG.minPhotoWidthPx, CONFIG.maxPhotoWidthPx);
+}
 
+function updateTunnel() {
   let closestVisibleYear = null;
   let closestDist = Infinity;
 
@@ -186,7 +221,6 @@ function updateTunnel() {
     const distance = (ringIndex - currentDepth) + CONFIG.focalOffset;
     const opacity = opacityForDistance(distance);
 
-    // Skip heavy work entirely for fully-invisible rings.
     if (opacity <= 0) {
       ring.container.style.opacity = 0;
       ring.container.style.pointerEvents = 'none';
@@ -196,25 +230,26 @@ function updateTunnel() {
     const rawScale = CONFIG.scaleConstant / Math.max(distance, 0.001);
     const scale = clamp(rawScale, 0.001, CONFIG.maxScale);
 
-    const radius = CONFIG.baseRadiusPx * scale;
-    const imgW = CONFIG.baseImgWidthPx * scale;
-    const imgH = CONFIG.baseImgHeightPx * scale;
+    const radius = Math.max(CONFIG.baseRadiusPx * scale, CONFIG.minRadiusPx);
+    const n = ring.photos.length;
+    const photoWidth = baselinePhotoWidth(n) * scale;
 
     ring.container.style.opacity = opacity;
     ring.container.style.pointerEvents = opacity > 0.05 ? 'auto' : 'none';
 
+    const spin = spinAccumDeg[ringIndex];
+
     ring.photos.forEach(photo => {
+      const w = photoWidth;
+      const h = w / (photo.aspectKnown ? photo.aspect : 1);
+
       const el = photo.el;
-      el.style.width = imgW + 'px';
-      el.style.height = imgH + 'px';
-      el.style.marginLeft = (-imgW / 2) + 'px';
-      el.style.marginTop = (-imgH / 2) + 'px';
-      // rotate() places the photo at angleDeg around the ring center
-      // AND, as a side effect of composing rotate+translate this way,
-      // rotates the photo itself by the same angle — which is exactly
-      // what makes its bottom edge face the center. See project notes.
+      el.style.width = w + 'px';
+      el.style.height = h + 'px';
+      el.style.marginLeft = (-w / 2) + 'px';
+      el.style.marginTop = (-h / 2) + 'px';
       el.style.transform =
-        'rotate(' + photo.angleDeg + 'deg) translateY(' + (-radius) + 'px)';
+        'rotate(' + (photo.angleDeg + spin) + 'deg) translateY(' + (-radius) + 'px)';
     });
 
     if (Math.abs(distance - CONFIG.focalOffset) < closestDist) {

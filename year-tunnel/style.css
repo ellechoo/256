@@ -1,0 +1,97 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  background: #ffffff;
+  color: #111;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* The viewport is what's actually visible — pinned to the screen while
+   the user scrolls through the (invisible, tall) spacer below it. */
+#tunnel-viewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #ffffff;
+  z-index: 1;
+}
+
+/* The stage is the actual 3D-ish tunnel container. Every ring lives
+   inside this, centered on the viewport. */
+#tunnel-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  perspective: 1200px;
+}
+
+/* One ring = one year. Positioned/scaled entirely via inline styles
+   set by script.js on every scroll update. */
+.ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  will-change: transform, opacity;
+}
+
+/* One photo within a ring. */
+.ring-photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  background: #eee;
+}
+
+.ring-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+/* Current year label, bottom-center of the viewport */
+#year-label {
+  position: fixed;
+  bottom: 36px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+#year-label-text {
+  display: inline-block;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  color: #222;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+/* The tall invisible spacer that actually creates scroll distance.
+   Its height is set dynamically by script.js based on how many years
+   there are. */
+#scroll-spacer {
+  position: relative;
+  width: 100%;
+  z-index: 0;
+}

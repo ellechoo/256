@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>September 3rd — A Tunnel Through Time</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Fixed viewport container — this is what the user actually sees.
+       It never scrolls itself; the tunnel effect is driven by reading
+       the page's scroll position and transforming things inside here. -->
+  <div id="tunnel-viewport">
+    <div id="tunnel-stage"></div>
+
+    <div id="year-label">
+      <span id="year-label-text"></span>
+    </div>
+  </div>
+
+  <!-- This is the actual scrollable content. It has no visible content
+       of its own — its height is what gives the user something to
+       scroll through. One "screen height" of scroll per year (see
+       CONFIG.vhPerYear in script.js). -->
+  <div id="scroll-spacer"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

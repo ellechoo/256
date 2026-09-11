@@ -8,15 +8,15 @@
 </head>
 <body>
 
-  <!-- Fixed viewport container — this is what the user actually sees.
-       It never scrolls itself; the tunnel effect is driven by reading
-       the page's scroll position and transforming things inside here. -->
+ <!-- Fixed viewport container — this is what the user actually sees. -->
   <div id="tunnel-viewport">
     <div id="tunnel-stage"></div>
+  </div>
 
-    <div id="year-label">
-      <span id="year-label-text"></span>
-    </div>
+  <!-- Year label lives OUTSIDE the viewport so its z-index is not
+       trapped inside the viewport's stacking context. -->
+  <div id="year-label">
+    <span id="year-label-text"></span>
   </div>
 
   <!-- This is the actual scrollable content. It has no visible content

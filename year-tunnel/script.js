@@ -322,7 +322,7 @@ function updateTunnel(deltaSec) {
     }
   });
 
-  if (closestVisibleYear !== null) {
+  if (!isModalOpen && closestVisibleYear !== null) {
     yearLabel.textContent = '09.03.' + closestVisibleYear;
   }
 
@@ -449,6 +449,10 @@ function fillModal() {
   const state     = ringEls[modalRingIndex].photos[modalPhotoIndex];
   const yearEntry = yearsData[modalRingIndex];
   const photo     = yearEntry.photos[modalPhotoIndex];
+
+  // Keep the header label showing the year of the photo currently in
+  // the modal, matching the "09.03.YYYY" format used on the tunnel.
+  yearLabel.textContent = '09.03.' + yearEntry.year;
 
   modalPhoto.src = state.img.src;
   modalPhoto.alt = state.img.alt;

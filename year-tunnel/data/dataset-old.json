@@ -34,13 +34,10 @@
               ],
               "pct": 17.0
             }
-          ],
-          "photographer": "lee vilenski",
-          "datetime": "2026-09-03",
-          "location": "51.9191, -2.0684"
+          ]
         },
         {
-          "file": "【JERA セ・リーグ公式戦】東京ヤクルトスワローズ vs 阪神タイガース 21回戦 明治神宮野球場 2026年9月3日の東京 202609031927 IMG 7294.jpg",
+          "file": "\u3010JERA \u30bb\u30fb\u30ea\u30fc\u30b0\u516c\u5f0f\u6226\u3011\u6771\u4eac\u30e4\u30af\u30eb\u30c8\u30b9\u30ef\u30ed\u30fc\u30ba vs \u962a\u795e\u30bf\u30a4\u30ac\u30fc\u30b9 21\u56de\u6226 \u660e\u6cbb\u795e\u5bae\u91ce\u7403\u5834 2026\u5e749\u67083\u65e5\u306e\u6771\u4eac 202609031927 IMG 7294.jpg",
           "hex": "#555350",
           "palette": [
             {
@@ -70,10 +67,7 @@
               ],
               "pct": 23.6
             }
-          ],
-          "photographer": "ウィ貴公子",
-          "datetime": "2026-09-03 19:27",
-          "device": "Apple iPhone 12 Pro"
+          ]
         },
         {
           "file": "Mars2020 - Sol 1967 - WATSON (55504578493).jpg",
@@ -106,9 +100,7 @@
               ],
               "pct": 21.9
             }
-          ],
-          "photographer": "kevin m. gill",
-          "datetime": "2026-09-03"
+          ]
         },
         {
           "file": "CA25G 893338@NXH (20260903114911).jpg",
@@ -141,11 +133,7 @@
               ],
               "pct": 21.6
             }
-          ],
-          "photographer": "n509fz",
-          "datetime": "2026-09-03 11:49:11",
-          "device": "NIKON CORPORATION NIKON D810",
-          "location": "39.8342, 116.2730"
+          ]
         },
         {
           "file": "IYOTETSU 769F+768F.jpg",
@@ -178,10 +166,7 @@
               ],
               "pct": 18.5
             }
-          ],
-          "photographer": "kaneyan maru",
-          "datetime": "2026-09-03 06:57",
-          "device": "Canon EOS Kiss X2"
+          ]
         },
         {
           "file": "Aitana Bonmatí.jpg",
@@ -189,34 +174,20 @@
           "palette": [
             {
               "hex": "#ae9b50",
-              "rgb": [
-                174,
-                155,
-                80
-              ],
+              "rgb": [174, 155, 80],
               "pct": 51.6
             },
             {
               "hex": "#9fbed8",
-              "rgb": [
-                159,
-                190,
-                216
-              ],
+              "rgb": [159, 190, 216],
               "pct": 24.7
             },
             {
               "hex": "#323c51",
-              "rgb": [
-                50,
-                60,
-                81
-              ],
+              "rgb": [50, 60, 81],
               "pct": 23.7
             }
-          ],
-          "photographer": "arcenb",
-          "datetime": "2026-09-03"
+          ]
         },
         {
           "file": "Cabina de conducción de un tren llegando al Apeadero Posadas, Misiones.jpg",
@@ -224,36 +195,20 @@
           "palette": [
             {
               "hex": "#201f20",
-              "rgb": [
-                32,
-                31,
-                32
-              ],
+              "rgb": [32, 31, 32],
               "pct": 44.9
             },
             {
               "hex": "#83796a",
-              "rgb": [
-                131,
-                121,
-                106
-              ],
+              "rgb": [131, 121, 106],
               "pct": 35.0
             },
             {
               "hex": "#e3e5c9",
-              "rgb": [
-                227,
-                229,
-                201
-              ],
+              "rgb": [227, 229, 201],
               "pct": 20.1
             }
-          ],
-          "photographer": "horacio cambeiro",
-          "datetime": "2026-09-03",
-          "device": "samsung Galaxy S25 Ultra",
-          "location": "-27.3787, -55.8832"
+          ]
         },
         {
           "file": "Chapiscamento da fachada do GE Sen Ovídio Teixeira (25589).jpg",
@@ -261,35 +216,20 @@
           "palette": [
             {
               "hex": "#706d68",
-              "rgb": [
-                112,
-                109,
-                104
-              ],
+              "rgb": [112, 109, 104],
               "pct": 47.5
             },
             {
               "hex": "#b8bfc4",
-              "rgb": [
-                184,
-                191,
-                196
-              ],
+              "rgb": [184, 191, 196],
               "pct": 32.3
             },
             {
               "hex": "#23261f",
-              "rgb": [
-                35,
-                38,
-                31
-              ],
+              "rgb": [35, 38, 31],
               "pct": 20.2
             }
-          ],
-          "photographer": "andré koehne",
-          "datetime": "2026-09-03",
-          "location": "-14.0695, -42.4840"
+          ]
         }
       ]
     },
@@ -327,13 +267,10 @@
               ],
               "pct": 14.7
             }
-          ],
-          "photographer": "steve morgan",
-          "datetime": "2025-09-03",
-          "device": "NIKON CORPORATION NIKON D7000"
+          ]
         },
         {
-          "file": "Ambiguità, Parco Altanea.jpg",
+          "file": "Ambiguit\u00e0, Parco Altanea.jpg",
           "hex": "#5e5f45",
           "palette": [
             {
@@ -363,10 +300,7 @@
               ],
               "pct": 20.8
             }
-          ],
-          "photographer": "đuro jiří",
-          "datetime": "2025-09-03",
-          "location": "45.5764, 12.8299"
+          ]
         },
         {
           "file": "An ancient Pilgrimage - Flickr - Deviations with Ray.jpg",
@@ -399,9 +333,7 @@
               ],
               "pct": 11.6
             }
-          ],
-          "photographer": "deviations with ray",
-          "datetime": "2025-09-03 01:00"
+          ]
         },
         {
           "file": "Arco de Bajamar (27764).jpg",
@@ -434,10 +366,7 @@
               ],
               "pct": 5.3
             }
-          ],
-          "photographer": "mentxuwiki",
-          "datetime": "2025-09-03",
-          "location": "28.5557, -16.3358"
+          ]
         },
         {
           "file": "Artwork - 3 rocks.jpg",
@@ -470,10 +399,7 @@
               ],
               "pct": 28.1
             }
-          ],
-          "photographer": "toz25",
-          "datetime": "2025-09-03",
-          "location": "48.1004, 9.7899"
+          ]
         },
         {
           "file": "AU small goods gn1.jpg",
@@ -506,13 +432,10 @@
               ],
               "pct": 29.6
             }
-          ],
-          "photographer": "gnangcomapp",
-          "datetime": "2025-09-03",
-          "location": "-32.1060, 115.9387"
+          ]
         },
         {
-          "file": "Bar à cocktails, place Charles-de-Gaulle, Vichy.jpg",
+          "file": "Bar \u00e0 cocktails, place Charles-de-Gaulle, Vichy.jpg",
           "hex": "#858585",
           "palette": [
             {
@@ -542,13 +465,10 @@
               ],
               "pct": 22.9
             }
-          ],
-          "photographer": "tcy",
-          "datetime": "2025-09-03",
-          "location": "46.1252, 3.4247"
+          ]
         },
         {
-          "file": "Odraz na autě.jpg",
+          "file": "Odraz na aut\u011b.jpg",
           "hex": "#5a5a5a",
           "palette": [
             {
@@ -578,9 +498,7 @@
               ],
               "pct": 16.6
             }
-          ],
-          "photographer": "jan kočičák kočí",
-          "datetime": "2025-09-03"
+          ]
         },
         {
           "file": "Caspian tiger.JPG",
@@ -613,8 +531,7 @@
               ],
               "pct": 18.1
             }
-          ],
-          "datetime": "2025-09-03 09:38:02"
+          ]
         }
       ]
     },
@@ -652,10 +569,7 @@
               ],
               "pct": 23.7
             }
-          ],
-          "photographer": "bernd schwabe in hannover",
-          "datetime": "2024-09-03",
-          "location": "52.3731, 9.7266"
+          ]
         },
         {
           "file": "2024 Tour of Britain 2024 Jed welcome pictures.jpg",
@@ -688,10 +602,7 @@
               ],
               "pct": 23.6
             }
-          ],
-          "photographer": "victuallers",
-          "datetime": "2024-09-03",
-          "location": "55.4799, -2.5511"
+          ]
         },
         {
           "file": "Agriculture technik, Dnipro.jpg",
@@ -724,13 +635,10 @@
               ],
               "pct": 19.8
             }
-          ],
-          "photographer": "alex blokha",
-          "datetime": "2024-09-03",
-          "device": "HUAWEI ELS-NX9"
+          ]
         },
         {
-          "file": "AK Parti Akseki Binası.jpg",
+          "file": "AK Parti Akseki Binas\u0131.jpg",
           "hex": "#6a777c",
           "palette": [
             {
@@ -760,10 +668,7 @@
               ],
               "pct": 17.7
             }
-          ],
-          "photographer": "bluetime93",
-          "datetime": "2024-09-03",
-          "location": "37.0478, 31.7903"
+          ]
         }
       ]
     },
@@ -801,11 +706,7 @@
               ],
               "pct": 22.5
             }
-          ],
-          "photographer": "pi.1415926535",
-          "datetime": "2023-09-03",
-          "device": "samsung SM-G973U",
-          "location": "37.7679, -122.2196"
+          ]
         },
         {
           "file": "Asrama Mahasiswa FKIP UNTAN.jpg",
@@ -838,10 +739,7 @@
               ],
               "pct": 21.6
             }
-          ],
-          "photographer": "hugerberg",
-          "datetime": "2023-09-03",
-          "location": "-0.0636, 109.3471"
+          ]
         },
         {
           "file": "Aussichtspunkt Hochwand.jpg",
@@ -874,13 +772,10 @@
               ],
               "pct": 17.5
             }
-          ],
-          "photographer": "daniel reust",
-          "datetime": "2023-09-03",
-          "location": "46.3336, 11.3442"
+          ]
         },
         {
-          "file": "Bahnhof Gdańsk Główny.jpg",
+          "file": "Bahnhof Gda\u0144sk G\u0142\u00f3wny.jpg",
           "hex": "#858b90",
           "palette": [
             {
@@ -910,10 +805,7 @@
               ],
               "pct": 14.6
             }
-          ],
-          "photographer": "5r-mft",
-          "datetime": "2023-09-03",
-          "location": "54.3550, 18.6454"
+          ]
         },
         {
           "file": "Balcony - Arlington, MA - 01.jpg",
@@ -946,9 +838,7 @@
               ],
               "pct": 22.8
             }
-          ],
-          "photographer": "daderot",
-          "datetime": "2023-09-03"
+          ]
         },
         {
           "file": "Bloom in the Bering Sea (MODIS).jpg",
@@ -981,9 +871,7 @@
               ],
               "pct": 22.9
             }
-          ],
-          "photographer": "modis land rapid response team, nasa gsfc",
-          "datetime": "2023-09-03"
+          ]
         },
         {
           "file": "Bokeh 002 2023 09 03.jpg",
@@ -1016,11 +904,7 @@
               ],
               "pct": 21.3
             }
-          ],
-          "photographer": "friedrich haag",
-          "datetime": "2023-09-03",
-          "device": "Canon EOS 6D Mark II",
-          "location": "49.6149, 8.3733"
+          ]
         },
         {
           "file": "Kreta (GR), Rethymno, Kirche _Naos tis Kyrias ton Angelon_ -- 2023 -- 8187.jpg",
@@ -1053,11 +937,7 @@
               ],
               "pct": 6.0
             }
-          ],
-          "photographer": "dietmar rabich",
-          "datetime": "2023-09-03 10:37",
-          "device": "Canon EOS 5D Mark IV",
-          "location": "35.3696, 24.4729"
+          ]
         },
         {
           "file": "Breitenberg cable car 01.jpg",
@@ -1090,14 +970,10 @@
               ],
               "pct": 11.3
             }
-          ],
-          "photographer": "llez",
-          "datetime": "2023-09-03",
-          "device": "Canon EOS 80D",
-          "location": "47.5488, 10.5700"
+          ]
         },
         {
-          "file": "Liorac-sur-Louyre, épi de faîtage, Napoléon I.jpg",
+          "file": "Liorac-sur-Louyre, \u00e9pi de fa\u00eetage, Napol\u00e9on I.jpg",
           "hex": "#6f97bf",
           "palette": [
             {
@@ -1127,10 +1003,7 @@
               ],
               "pct": 8.9
             }
-          ],
-          "photographer": "cjp24",
-          "datetime": "2023-09-03 18:02:06",
-          "device": "NIKON COOLPIX S7000"
+          ]
         }
       ]
     },
@@ -1168,9 +1041,7 @@
               ],
               "pct": 18.1
             }
-          ],
-          "photographer": "sentinelhub",
-          "datetime": "2022-09-03"
+          ]
         },
         {
           "file": "(Foggy Paimio River) - Flickr - Tero Karppinen.jpg",
@@ -1203,10 +1074,7 @@
               ],
               "pct": 2.5
             }
-          ],
-          "photographer": "tero karppinen from finland",
-          "datetime": "2022-09-03 00:27",
-          "device": "SONY ILCE-7M2"
+          ]
         },
         {
           "file": "1956 Porsche 550 Spyder.jpg",
@@ -1239,11 +1107,7 @@
               ],
               "pct": 21.0
             }
-          ],
-          "photographer": "calreyn88",
-          "datetime": "2022-09-03 10:05",
-          "device": "Google Pixel 6",
-          "location": "51.4036, -0.3384"
+          ]
         },
         {
           "file": "A permanently glitched arcade machine of __--Phoenix (video game)-Phoenix--__.jpg",
@@ -1276,10 +1140,7 @@
               ],
               "pct": 23.8
             }
-          ],
-          "photographer": "reynard bennett",
-          "datetime": "2022-09-03",
-          "device": "motorola moto g power (2021)"
+          ]
         },
         {
           "file": "Aki Kering Sepeda Motor.jpg",
@@ -1312,10 +1173,7 @@
               ],
               "pct": 16.7
             }
-          ],
-          "photographer": "darmas sb 9",
-          "datetime": "2022-09-03",
-          "device": "HMD Global Nokia C1"
+          ]
         },
         {
           "file": "Artemis I Preflight (NHQ202209030203).jpg",
@@ -1348,10 +1206,7 @@
               ],
               "pct": 13.8
             }
-          ],
-          "photographer": "nasa hq photo",
-          "datetime": "2022-09-03 10:22",
-          "device": "NIKON CORPORATION NIKON Z 9"
+          ]
         },
         {
           "file": "Blick durch den Berliner Fernsehturm - Flickr - tenzin.peljor.jpg",
@@ -1384,10 +1239,7 @@
               ],
               "pct": 19.8
             }
-          ],
-          "photographer": "tenzin peljor",
-          "datetime": "2022-09-03 09:00",
-          "device": "OM Digital Solutions OM-1"
+          ]
         },
         {
           "file": "Walhalla 2022-09-03 (51).jpg",
@@ -1420,13 +1272,10 @@
               ],
               "pct": 23.4
             }
-          ],
-          "photographer": "thomas l84",
-          "datetime": "2022-09-03 07:44:14",
-          "device": "SONY ILCE-6300"
+          ]
         },
         {
-          "file": "Церковь Григория Неокессарийского (3), высокое разрешение.jpg",
+          "file": "\u0426\u0435\u0440\u043a\u043e\u0432\u044c \u0413\u0440\u0438\u0433\u043e\u0440\u0438\u044f \u041d\u0435\u043e\u043a\u0435\u0441\u0441\u0430\u0440\u0438\u0439\u0441\u043a\u043e\u0433\u043e (3), \u0432\u044b\u0441\u043e\u043a\u043e\u0435 \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u0438\u0435.jpg",
           "hex": "#6a6c7e",
           "palette": [
             {
@@ -1456,11 +1305,7 @@
               ],
               "pct": 24.5
             }
-          ],
-          "photographer": "cosmopartic",
-          "datetime": "2022-09-03 16:09:15",
-          "device": "Apple iPhone 12 Pro Max",
-          "location": "55.7375, 37.6200"
+          ]
         },
         {
           "file": "Violinist from street in Montreal.jpg",
@@ -1493,10 +1338,7 @@
               ],
               "pct": 21.6
             }
-          ],
-          "photographer": "wilfredor",
-          "datetime": "2022-09-03 12:23:33",
-          "device": "NIKON CORPORATION NIKON Z 7_2"
+          ]
         }
       ]
     },
@@ -1534,10 +1376,7 @@
               ],
               "pct": 24.9
             }
-          ],
-          "photographer": "minka6 from beacon, ny, united states",
-          "datetime": "2021-09-03 00:54",
-          "device": "NIKON CORPORATION NIKON D780"
+          ]
         },
         {
           "file": "Dr BR Ambedkar Statue.jpg",
@@ -1570,9 +1409,7 @@
               ],
               "pct": 27.6
             }
-          ],
-          "photographer": "pranayraj1985",
-          "datetime": "2021-09-03"
+          ]
         },
         {
           "file": "Fox at Katmai Bay - Flickr - KatmaiNPS.jpg",
@@ -1605,10 +1442,7 @@
               ],
               "pct": 26.7
             }
-          ],
-          "photographer": "katmai national park and preserve",
-          "datetime": "2021-09-03 16:29",
-          "device": "SONY ILCE-7RM4"
+          ]
         },
         {
           "file": "Get vaccinated - Flickr - 7C0.jpg",
@@ -1641,13 +1475,10 @@
               ],
               "pct": 17.8
             }
-          ],
-          "photographer": "7c0",
-          "datetime": "2021-09-03 14:47",
-          "device": "SONY ILCE-6000"
+          ]
         },
         {
-          "file": "Grundtvigs Kirke - Flickr - flöschen.jpg",
+          "file": "Grundtvigs Kirke - Flickr - fl\u00f6schen.jpg",
           "hex": "#423835",
           "palette": [
             {
@@ -1677,11 +1508,7 @@
               ],
               "pct": 8.4
             }
-          ],
-          "photographer": "flöschen",
-          "datetime": "2021-09-03 11:59",
-          "device": "NIKON CORPORATION NIKON D80",
-          "location": "55.7165, 12.5336"
+          ]
         },
         {
           "file": "GTL0476-Instagram-2-Edit - Flickr - gary leavens.jpg",
@@ -1714,11 +1541,7 @@
               ],
               "pct": 26.7
             }
-          ],
-          "photographer": "gary leavens",
-          "datetime": "2021-09-03 11:39",
-          "device": "Canon EOS R6",
-          "location": "28.7105, -81.4719"
+          ]
         },
         {
           "file": "Cheesecake Brook, West Newton Village, Massachusetts.jpg",
@@ -1751,11 +1574,7 @@
               ],
               "pct": 25.2
             }
-          ],
-          "photographer": "alexgriswold",
-          "datetime": "2021-09-03 21:52:33",
-          "device": "NORITSU KOKI QSS-32_33",
-          "location": "42.3521, -71.2164"
+          ]
         },
         {
           "file": "Dalibor Grubacevic2 2021.jpg",
@@ -1788,10 +1607,7 @@
               ],
               "pct": 4.9
             }
-          ],
-          "photographer": "dalibor1975",
-          "datetime": "2021-09-03 13:01:58",
-          "device": "SONY ILCE-7RM4A"
+          ]
         },
         {
           "file": "Borgward Isabella Cabriolet Classic-Gala 2021 1X7A0257.jpg",
@@ -1824,11 +1640,7 @@
               ],
               "pct": 26.9
             }
-          ],
-          "photographer": "alexander migl",
-          "datetime": "2021-09-03 14:12",
-          "device": "Canon EOS 5D Mark IV",
-          "location": "49.3835, 8.5672"
+          ]
         }
       ]
     },
@@ -1836,7 +1648,7 @@
       "year": 2020,
       "photos": [
         {
-          "file": "31 - Hôtel d'Assézat - Porte escalier de l'angle nord-ouest détail.jpg",
+          "file": "31 - H\u00f4tel d'Ass\u00e9zat - Porte escalier de l'angle nord-ouest d\u00e9tail.jpg",
           "hex": "#806e57",
           "palette": [
             {
@@ -1866,11 +1678,7 @@
               ],
               "pct": 32.3
             }
-          ],
-          "photographer": "didier descouens",
-          "datetime": "2020-09-03",
-          "device": "HUAWEI ELE-L29",
-          "location": "43.6003, 1.4420"
+          ]
         },
         {
           "file": "4th and Royal - Flickr - Dennis S. Hurd.jpg",
@@ -1903,11 +1711,7 @@
               ],
               "pct": 26.2
             }
-          ],
-          "photographer": "dennis sylvester hurd",
-          "datetime": "2020-09-03 12:31",
-          "device": "DJI FC7203",
-          "location": "49.2071, -122.9089"
+          ]
         },
         {
           "file": "Alard van Herpenplein 1 Herpen.jpg",
@@ -1940,13 +1744,10 @@
               ],
               "pct": 17.3
             }
-          ],
-          "photographer": "ragingr2",
-          "datetime": "2020-09-03",
-          "location": "51.7731, 5.6419"
+          ]
         },
         {
-          "file": "Alegorické sochy vpravo na severním tympanonu Mlýnské kolonády v Karlových Varech.jpg",
+          "file": "Alegorick\u00e9 sochy vpravo na severn\u00edm tympanonu Ml\u00fdnsk\u00e9 kolon\u00e1dy v Karlov\u00fdch Varech.jpg",
           "hex": "#8b8d8a",
           "palette": [
             {
@@ -1976,10 +1777,7 @@
               ],
               "pct": 26.5
             }
-          ],
-          "photographer": "itsd-foto",
-          "datetime": "2020-09-03",
-          "location": "50.2256, 12.8816"
+          ]
         },
         {
           "file": "Aschaffenburg Dawn.jpg",
@@ -2012,10 +1810,7 @@
               ],
               "pct": 23.7
             }
-          ],
-          "photographer": "freak-line-community",
-          "datetime": "2020-09-03",
-          "location": "49.9797, 9.1268"
+          ]
         }
       ]
     },
@@ -2023,7 +1818,7 @@
       "year": 2019,
       "photos": [
         {
-          "file": "Assistenzsystem für lärmarme Anflüge (48705201906).jpeg",
+          "file": "Assistenzsystem f\u00fcr l\u00e4rmarme Anfl\u00fcge (48705201906).jpeg",
           "hex": "#79818b",
           "palette": [
             {
@@ -2053,10 +1848,7 @@
               ],
               "pct": 26.6
             }
-          ],
-          "photographer": "dlr_de",
-          "datetime": "2019-09-03 10:38",
-          "device": "Canon EOS 80D"
+          ]
         },
         {
           "file": "CS1 Engine Section Move into 110 (MAF 20190903 P CS1 ES into 110-15).jpg",
@@ -2089,10 +1881,7 @@
               ],
               "pct": 29.9
             }
-          ],
-          "photographer": "nasa michoud assembly facility / jude guidry",
-          "datetime": "2019-09-03",
-          "device": "NIKON CORPORATION NIKON D850"
+          ]
         },
         {
           "file": "Deb Haaland visits Yellowstone National Park (September 2019) 02.jpg",
@@ -2125,9 +1914,7 @@
               ],
               "pct": 20.2
             }
-          ],
-          "photographer": "deb haaland",
-          "datetime": "2019-09-03"
+          ]
         },
         {
           "file": "Felstor Sass pordoi 2019-09-03.jpg",
@@ -2160,10 +1947,7 @@
               ],
               "pct": 26.6
             }
-          ],
-          "photographer": "z thomas",
-          "datetime": "2019-09-03",
-          "device": "HUAWEI LYA-L29"
+          ]
         },
         {
           "file": "Dronie with Mavic2Pro asv2019-09.jpg",
@@ -2196,11 +1980,7 @@
               ],
               "pct": 6.9
             }
-          ],
-          "photographer": "a.savin",
-          "datetime": "2019-09-03",
-          "device": "Hasselblad L1D-20c",
-          "location": "52.4711, 13.3962"
+          ]
         },
         {
           "file": "Jawahar Chavda.jpg",
@@ -2233,10 +2013,7 @@
               ],
               "pct": 23.9
             }
-          ],
-          "photographer": "snehrashmi",
-          "datetime": "2019-09-03 12:29:10",
-          "device": "Canon EOS REBEL T3i"
+          ]
         }
       ]
     },
@@ -2274,11 +2051,7 @@
               ],
               "pct": 19.9
             }
-          ],
-          "photographer": "back_ache",
-          "datetime": "2018-09-03",
-          "device": "motorola moto g(6) play",
-          "location": "51.5165, -0.0813"
+          ]
         },
         {
           "file": "180903-N-FV739-043(4696710).jpg",
@@ -2311,10 +2084,7 @@
               ],
               "pct": 26.2
             }
-          ],
-          "photographer": "petty officer 3rd class christopher veloicaza",
-          "datetime": "2018-09-03",
-          "device": "NIKON CORPORATION NIKON D750"
+          ]
         },
         {
           "file": "2018 LACL Place Names (1e4207fb-c97c-424b-b81d-83073cfd5a32).jpg",
@@ -2347,10 +2117,7 @@
               ],
               "pct": 10.0
             }
-          ],
-          "photographer": "national park service",
-          "datetime": "2018-09-03",
-          "device": "NIKON CORPORATION NIKON D810"
+          ]
         },
         {
           "file": "20180903Calystegia sepium1.jpg",
@@ -2383,11 +2150,7 @@
               ],
               "pct": 17.8
             }
-          ],
-          "photographer": "anro0002",
-          "datetime": "2018-09-03",
-          "device": "Canon PowerShot A1400",
-          "location": "49.3809, 8.5702"
+          ]
         },
         {
           "file": "Achaea janata,castor semi-looper or croton caterpillar 2.jpg",
@@ -2420,10 +2183,7 @@
               ],
               "pct": 10.5
             }
-          ],
-          "photographer": "renjusplace",
-          "datetime": "2018-09-03",
-          "device": "motorola Moto G (5) Plus"
+          ]
         },
         {
           "file": "Acleris cristana - Ben Sale - 2018 (45016436785).jpg",
@@ -2456,10 +2216,7 @@
               ],
               "pct": 12.2
             }
-          ],
-          "photographer": "ben sale",
-          "datetime": "2018-09-03 17:14:42",
-          "device": "SONY SLT-A65V"
+          ]
         },
         {
           "file": "Agra Travel 3.jpg",
@@ -2492,10 +2249,7 @@
               ],
               "pct": 11.2
             }
-          ],
-          "photographer": "adhiyan01",
-          "datetime": "2018-09-03",
-          "device": "NIKON CORPORATION NIKON D5300"
+          ]
         },
         {
           "file": "Underexposed - Flickr - Nithi clicks.jpg",
@@ -2528,11 +2282,7 @@
               ],
               "pct": 3.9
             }
-          ],
-          "photographer": "nithi anand from paris, france",
-          "datetime": "2018-09-03 19:56",
-          "device": "NIKON CORPORATION NIKON D700",
-          "location": "11.9315, 79.8332"
+          ]
         }
       ]
     },
@@ -2540,7 +2290,7 @@
       "year": 2017,
       "photos": [
         {
-          "file": "09.03 「中華民國106年秋祭忠烈殉職人員典禮」出席的三軍代表 36155436204 053985938a o.jpg",
+          "file": "09.03 \u300c\u4e2d\u83ef\u6c11\u570b106\u5e74\u79cb\u796d\u5fe0\u70c8\u6b89\u8077\u4eba\u54e1\u5178\u79ae\u300d\u51fa\u5e2d\u7684\u4e09\u8ecd\u4ee3\u8868 36155436204 053985938a o.jpg",
           "hex": "#524443",
           "palette": [
             {
@@ -2570,10 +2320,7 @@
               ],
               "pct": 15.9
             }
-          ],
-          "photographer": "​總統府",
-          "datetime": "2017-09-03 09:03",
-          "device": "Canon EOS 5D Mark IV"
+          ]
         },
         {
           "file": "9912Makati Central Business District Ayala Greenbelt Landmarks 43.jpg",
@@ -2606,11 +2353,7 @@
               ],
               "pct": 23.1
             }
-          ],
-          "photographer": "judgefloro",
-          "datetime": "2017-09-03 15:10:55",
-          "device": "NIKON COOLPIX AW100",
-          "location": "14.5511, 121.0203"
+          ]
         },
         {
           "file": "A red rose.jpeg",
@@ -2643,10 +2386,7 @@
               ],
               "pct": 14.1
             }
-          ],
-          "photographer": "shanmugamp7",
-          "datetime": "2017-09-03",
-          "device": "ONEPLUS A3003"
+          ]
         },
         {
           "file": "A room's lamp.jpg",
@@ -2679,13 +2419,10 @@
               ],
               "pct": 12.4
             }
-          ],
-          "photographer": "sami raito",
-          "datetime": "2017-09-03",
-          "device": "SAMSUNG SM-J110F"
+          ]
         },
         {
-          "file": "Ancien hôtel à Aix-les-Bains.jpg",
+          "file": "Ancien h\u00f4tel \u00e0 Aix-les-Bains.jpg",
           "hex": "#797b75",
           "palette": [
             {
@@ -2715,11 +2452,7 @@
               ],
               "pct": 19.6
             }
-          ],
-          "photographer": "benoît prieur",
-          "datetime": "2017-09-03 09:23:16",
-          "device": "Apple iPhone 7",
-          "location": "45.6867, 5.9166"
+          ]
         },
         {
           "file": "Ball durant la Festa Major de la.Quar.jpg",
@@ -2752,10 +2485,7 @@
               ],
               "pct": 24.2
             }
-          ],
-          "photographer": "pitxiquin",
-          "datetime": "2017-09-03",
-          "device": "HUAWEI VIE-L29"
+          ]
         }
       ]
     },
@@ -2793,10 +2523,7 @@
               ],
               "pct": 22.9
             }
-          ],
-          "photographer": "u.s. department of defense current photos sgt. ricardo hurtado/i marine expeditionary force",
-          "datetime": "2016-09-03",
-          "device": "Canon EOS 5D Mark III"
+          ]
         },
         {
           "file": "31st MEU Amphibious Raid 160903-M-MF313-028.jpg",
@@ -2829,10 +2556,7 @@
               ],
               "pct": 23.4
             }
-          ],
-          "photographer": "cpl. darien bjorndal",
-          "datetime": "2016-09-03",
-          "device": "Canon EOS 5D Mark III"
+          ]
         },
         {
           "file": "Agariko-daiou 001.jpg",
@@ -2865,10 +2589,7 @@
               ],
               "pct": 10.1
             }
-          ],
-          "photographer": "8-forest",
-          "datetime": "2016-09-03 14:31:55",
-          "device": "FUJIFILM FinePix F770EXR"
+          ]
         },
         {
           "file": "An giang - Tan chau - panoramio - trungydang (5).jpg",
@@ -2901,10 +2622,7 @@
               ],
               "pct": 25.8
             }
-          ],
-          "photographer": "trungydang",
-          "datetime": "2016-09-03",
-          "device": "NIKON CORPORATION NIKON D7100"
+          ]
         },
         {
           "file": "And So It Begins... Autumn - Flickr - Natalia Medd.jpg",
@@ -2937,10 +2655,7 @@
               ],
               "pct": 24.8
             }
-          ],
-          "photographer": "natalia medd",
-          "datetime": "2016-09-03 13:31",
-          "device": "Canon EOS REBEL T3i"
+          ]
         },
         {
           "file": "Antelope Canyon candle.jpg",
@@ -2973,10 +2688,7 @@
               ],
               "pct": 26.0
             }
-          ],
-          "photographer": "shashanksinghrathore",
-          "datetime": "2016-09-03 19:31",
-          "device": "Canon EOS 600D"
+          ]
         },
         {
           "file": "Ban Ki-moon, Xi Jinping and Barack Obama in Hangzhou (2016-09-03).jpg",
@@ -3009,9 +2721,7 @@
               ],
               "pct": 21.2
             }
-          ],
-          "photographer": "pete souza",
-          "datetime": "2016-09-03"
+          ]
         },
         {
           "file": "Lady-Finger Peak view.jpg",
@@ -3044,10 +2754,7 @@
               ],
               "pct": 19.0
             }
-          ],
-          "photographer": "xeshan ebrahim",
-          "datetime": "2016-09-03 18:20:37",
-          "device": "Amazon Fire"
+          ]
         },
         {
           "file": "Ursus americanus machetes.jpg",
@@ -3080,10 +2787,7 @@
               ],
               "pct": 20.3
             }
-          ],
-          "photographer": "alejandro gómez nísino",
-          "datetime": "2016-09-03",
-          "location": "30.0960, -108.2867"
+          ]
         },
         {
           "file": "Brooklyn-17 (29430325696).jpg",
@@ -3116,11 +2820,7 @@
               ],
               "pct": 20.8
             }
-          ],
-          "photographer": "ajay suresh from new york, ny, usa",
-          "datetime": "2016-09-03 20:56",
-          "device": "OLYMPUS IMAGING CORP. E-M1",
-          "location": "40.7008, -73.9968"
+          ]
         },
         {
           "file": "Raka Poshi View.jpg",
@@ -3153,10 +2853,7 @@
               ],
               "pct": 23.9
             }
-          ],
-          "photographer": "xeshan ebrahim",
-          "datetime": "2016-09-03 14:35:51",
-          "device": "Amazon Fire"
+          ]
         },
         {
           "file": "247 366 - Freude Happiness (28957223743).jpg",
@@ -3189,10 +2886,7 @@
               ],
               "pct": 20.8
             }
-          ],
-          "photographer": "boris thaser from augsburg, germany",
-          "datetime": "2016-09-03 16:41",
-          "device": "FUJIFILM X-T1"
+          ]
         },
         {
           "file": "Justine le clercq-1495038842.jpg",
@@ -3225,10 +2919,7 @@
               ],
               "pct": 7.3
             }
-          ],
-          "photographer": "jan harm bakhuys",
-          "datetime": "2016-09-03 15:17:00",
-          "device": "Canon EOS 5D Mark III"
+          ]
         }
       ]
     },
@@ -3236,7 +2927,7 @@
       "year": 2015,
       "photos": [
         {
-          "file": "104国道 - National Highway 104 - 2015.09 - panoramio.jpg",
+          "file": "104\u56fd\u9053 - National Highway 104 - 2015.09 - panoramio.jpg",
           "hex": "#7e8a97",
           "palette": [
             {
@@ -3266,11 +2957,7 @@
               ],
               "pct": 26.7
             }
-          ],
-          "photographer": "rheins",
-          "datetime": "2015-09-03",
-          "device": "Canon PowerShot S100V",
-          "location": "26.2998, 119.4968"
+          ]
         },
         {
           "file": "Giorgio Chiellini (edited).jpg",
@@ -3303,10 +2990,7 @@
               ],
               "pct": 21.6
             }
-          ],
-          "photographer": "original: puma se derivative work: danyele",
-          "datetime": "2015-09-03",
-          "device": "Canon EOS-1D X"
+          ]
         },
         {
           "file": "340th EARS refuels F-15s and F-16s 150903-F-SP601-025.jpg",
@@ -3339,10 +3023,7 @@
               ],
               "pct": 21.5
             }
-          ],
-          "photographer": "senior airman taylor queen",
-          "datetime": "2015-09-03",
-          "device": "NIKON CORPORATION NIKON D4"
+          ]
         },
         {
           "file": "Achotel3sep15.jpg",
@@ -3375,11 +3056,7 @@
               ],
               "pct": 15.9
             }
-          ],
-          "photographer": "mtlfiredude",
-          "datetime": "2015-09-03",
-          "device": "Apple iPhone 5s",
-          "location": "45.5058, -73.5640"
+          ]
         },
         {
           "file": "Altenzentrum Goldbach .jpg",
@@ -3412,10 +3089,7 @@
               ],
               "pct": 29.9
             }
-          ],
-          "photographer": "wald-burger8",
-          "datetime": "2015-09-03",
-          "device": "Canon PowerShot SX220 HS"
+          ]
         },
         {
           "file": "American Rubyspots - Flickr - Fyn Kynd.jpg",
@@ -3448,13 +3122,10 @@
               ],
               "pct": 10.9
             }
-          ],
-          "photographer": "fyn kynd",
-          "datetime": "2015-09-03 13:17",
-          "device": "Canon EOS 7D"
+          ]
         },
         {
-          "file": "Aves en la Reserva Mbaracayú 3.jpg",
+          "file": "Aves en la Reserva Mbaracay\u00fa 3.jpg",
           "hex": "#7b7c5a",
           "palette": [
             {
@@ -3484,10 +3155,7 @@
               ],
               "pct": 18.9
             }
-          ],
-          "photographer": "víctor azcona",
-          "datetime": "2015-09-03 16:27:36",
-          "device": "NIKON CORPORATION NIKON D3S"
+          ]
         },
         {
           "file": "Grube Mauritius eingang neu.jpg",
@@ -3520,10 +3188,7 @@
               ],
               "pct": 8.4
             }
-          ],
-          "photographer": "weirdmeister",
-          "datetime": "2015-09-03 11:47:53",
-          "device": "SONY DSC-QX100"
+          ]
         },
         {
           "file": "Glowing vacuum tubes of Mcintosh MC240 audio amplifier.jpg",
@@ -3556,10 +3221,7 @@
               ],
               "pct": 11.2
             }
-          ],
-          "photographer": "sebastian nizan",
-          "datetime": "2015-09-03 18:28:12",
-          "device": "Hasselblad CFV-50c/500"
+          ]
         },
         {
           "file": "Madagascar Portraits (20477176663).jpg",
@@ -3592,9 +3254,7 @@
               ],
               "pct": 28.5
             }
-          ],
-          "photographer": "rod waddington",
-          "datetime": "2015-09-03 09:39:42"
+          ]
         }
       ]
     },
@@ -3632,9 +3292,7 @@
               ],
               "pct": 29.7
             }
-          ],
-          "photographer": "terri sewell",
-          "datetime": "2014-09-03"
+          ]
         },
         {
           "file": "'Blackjacks' conduct Seahawk maintenance aboard USS America 140903-N-LD343-009.jpg",
@@ -3667,10 +3325,7 @@
               ],
               "pct": 21.8
             }
-          ],
-          "photographer": "petty officer 1st class demetrius kennon",
-          "datetime": "2014-09-03",
-          "device": "ss Demetrius Kenno n/Released"
+          ]
         },
         {
           "file": "16th Space Control Squadron (140903-F-II211-129).jpg",
@@ -3703,10 +3358,7 @@
               ],
               "pct": 15.9
             }
-          ],
-          "photographer": "airman st class krystal ardrey",
-          "datetime": "2014-09-03",
-          "device": "NIKON CORPORATION NIKON D4"
+          ]
         },
         {
           "file": "1Lt Tyler Stiles (140903-F-II211-288).jpg",
@@ -3739,9 +3391,7 @@
               ],
               "pct": 17.7
             }
-          ],
-          "datetime": "2014-09-03",
-          "device": "NIKON CORPORATION NIKON D4"
+          ]
         },
         {
           "file": "22nd MEU, Bataan conduct Harrier operations 140903-M-WJ569-001.jpg",
@@ -3774,10 +3424,7 @@
               ],
               "pct": 22.8
             }
-          ],
-          "photographer": "gunnery sgt. freddy cantu",
-          "datetime": "2014-09-03",
-          "device": "Canon EOS 5D Mark III"
+          ]
         },
         {
           "file": "Aeroporto de Peinador, Abanca, Galicia Sabe.JPG",
@@ -3810,10 +3457,7 @@
               ],
               "pct": 27.5
             }
-          ],
-          "photographer": "hombredhojalata",
-          "datetime": "2014-09-03 12:58:33",
-          "device": "NIKON CORPORATION NIKON D3000"
+          ]
         },
         {
           "file": "Agua caliente ranch west approach.jpg",
@@ -3846,11 +3490,7 @@
               ],
               "pct": 26.7
             }
-          ],
-          "photographer": "tdw1203",
-          "datetime": "2014-09-03 16:50:34",
-          "device": "LEICA D-LUX 3",
-          "location": "32.2817, -110.7333"
+          ]
         },
         {
           "file": "Neighbors cat (15129829305).jpg",
@@ -3883,10 +3523,7 @@
               ],
               "pct": 21.9
             }
-          ],
-          "photographer": "magnus johansson",
-          "datetime": "2014-09-03 18:30",
-          "device": "NIKON CORPORATION NIKON D810"
+          ]
         }
       ]
     },
@@ -3894,7 +3531,7 @@
       "year": 2013,
       "photos": [
         {
-          "file": "13. internationales literaturfestival berlin - Haus der Berliner Festspiele - Große Bühne - Weltpremierenlesung aus _Alles - Worum es geht_ von Janne Teller.JPG",
+          "file": "13. internationales literaturfestival berlin - Haus der Berliner Festspiele - Gro\u00dfe B\u00fchne - Weltpremierenlesung aus _Alles - Worum es geht_ von Janne Teller.JPG",
           "hex": "#17120e",
           "palette": [
             {
@@ -3924,10 +3561,7 @@
               ],
               "pct": 0.6
             }
-          ],
-          "photographer": "christophpeter",
-          "datetime": "2013-09-03 11:41",
-          "device": "Canon IXUS 240 HS"
+          ]
         },
         {
           "file": "130903-M-AL626-880 (9722205423).jpg",
@@ -3960,10 +3594,7 @@
               ],
               "pct": 5.4
             }
-          ],
-          "photographer": "u.s. department of defense current photos",
-          "datetime": "2013-09-03",
-          "device": "Canon EOS 5D Mark II"
+          ]
         },
         {
           "file": "Ammunition upload 130903-N-PZ713-209.jpg",
@@ -3996,10 +3627,7 @@
               ],
               "pct": 28.5
             }
-          ],
-          "photographer": "ram",
-          "datetime": "2013-09-03",
-          "device": "ass Mayra A. Knigh t/Released)"
+          ]
         },
         {
           "file": "Atardecer Guaro.JPG",
@@ -4032,10 +3660,7 @@
               ],
               "pct": 13.6
             }
-          ],
-          "photographer": "samuelistok",
-          "datetime": "2013-09-03 06:33:18",
-          "device": "SONY DSC-HX200V"
+          ]
         },
         {
           "file": "Bloomery Iron Furnace Bloomery WV 2013 09 03 01.jpg",
@@ -4068,10 +3693,7 @@
               ],
               "pct": 19.3
             }
-          ],
-          "photographer": "justin.a.wilcox",
-          "datetime": "2013-09-03 11:59:16",
-          "device": "Apple iPhone 4S"
+          ]
         },
         {
           "file": "CyL tittle.jpg",
@@ -4104,10 +3726,7 @@
               ],
               "pct": 9.4
             }
-          ],
-          "photographer": "bernardaalba",
-          "datetime": "2013-09-03 14:18",
-          "device": "SAMSUNG GT-I8190N"
+          ]
         },
         {
           "file": "Dental Chair.jpg",
@@ -4140,13 +3759,10 @@
               ],
               "pct": 25.8
             }
-          ],
-          "photographer": "user:nizil shah",
-          "datetime": "2013-09-03",
-          "device": "Micromax A110Q"
+          ]
         },
         {
-          "file": "Carl Morgenstern - Südliche Küstenlandschaft.jpg",
+          "file": "Carl Morgenstern - S\u00fcdliche K\u00fcstenlandschaft.jpg",
           "hex": "#b49d86",
           "palette": [
             {
@@ -4176,10 +3792,7 @@
               ],
               "pct": 17.1
             }
-          ],
-          "photographer": "carl morgenstern",
-          "datetime": "2013-09-03 07:46:43",
-          "device": "Hasselblad H3D II-39"
+          ]
         },
         {
           "file": "Puccio di Simone. Saint Anthony - abbot. 1353, Fabriano, Pinacoteca Civica.jpg",
@@ -4212,10 +3825,7 @@
               ],
               "pct": 25.0
             }
-          ],
-          "photographer": "puccio di simone",
-          "datetime": "2013-09-03 20:59:51",
-          "device": "Hasselblad H4D-50"
+          ]
         },
         {
           "file": "130903-M-UY543-425 (9685729561).jpg",
@@ -4248,10 +3858,7 @@
               ],
               "pct": 21.3
             }
-          ],
-          "photographer": "u.s. department of defense current photos",
-          "datetime": "2013-09-03",
-          "device": "Canon EOS 5D Mark II"
+          ]
         },
         {
           "file": "GEDC5678 (11940228834).jpg",
@@ -4284,10 +3891,7 @@
               ],
               "pct": 9.7
             }
-          ],
-          "photographer": "joan sebastián araújo arena from venezuela",
-          "datetime": "2013-09-03 13:15",
-          "device": "GENERAL IMAGING CO. X400"
+          ]
         }
       ]
     },
@@ -4325,10 +3929,7 @@
               ],
               "pct": 25.3
             }
-          ],
-          "photographer": "wadorgurt",
-          "datetime": "2012-09-03",
-          "location": "56.8376, 53.3402"
+          ]
         },
         {
           "file": "A formation of F-16 Fighting Falcon aircraft with the 480th Fighter Squadron fly overhead during Nordic Air Meet (NOAM) 12 in Finland Sept 120903-F-RC891-616.jpg",
@@ -4361,13 +3962,10 @@
               ],
               "pct": 0.4
             }
-          ],
-          "photographer": "a1c dillon davis",
-          "datetime": "2012-09-03",
-          "device": "NIKON CORPORATION NIKON D700"
+          ]
         },
         {
-          "file": "Barrio Moro, Ágreda, España, 2012-08-27, DD 06.JPG",
+          "file": "Barrio Moro, \u00c1greda, Espa\u00f1a, 2012-08-27, DD 06.JPG",
           "hex": "#9f9e82",
           "palette": [
             {
@@ -4397,10 +3995,7 @@
               ],
               "pct": 21.7
             }
-          ],
-          "photographer": "diego delso",
-          "datetime": "2012-09-03",
-          "device": "Canon EOS 5D Mark II"
+          ]
         },
         {
           "file": "Alger - panoramio (1).jpg",
@@ -4433,13 +4028,10 @@
               ],
               "pct": 22.1
             }
-          ],
-          "photographer": "---=xeon=---",
-          "datetime": "2012-09-03",
-          "location": "37.0705, 3.1904"
+          ]
         },
         {
-          "file": "Almebrücke einbogig fd.JPG",
+          "file": "Almebr\u00fccke einbogig fd.JPG",
           "hex": "#4a573d",
           "palette": [
             {
@@ -4469,11 +4061,7 @@
               ],
               "pct": 9.4
             }
-          ],
-          "photographer": "friedhelm dröge",
-          "datetime": "2012-09-03",
-          "device": "Panasonic DMC-TZ22",
-          "location": "51.6073, 8.6480"
+          ]
         },
         {
           "file": "Zagori - On the road to Papigko - panoramio.jpg",
@@ -4506,11 +4094,7 @@
               ],
               "pct": 23.6
             }
-          ],
-          "photographer": "numenor",
-          "datetime": "2012-09-03",
-          "device": "WWW.SAMOON.NET HD CAR DVR",
-          "location": "39.9626, 20.7131"
+          ]
         }
       ]
     },
@@ -4548,10 +4132,7 @@
               ],
               "pct": 13.5
             }
-          ],
-          "photographer": "sevimaltnbag@gmail.c…",
-          "datetime": "2011-09-03",
-          "device": "Canon PowerShot A480"
+          ]
         },
         {
           "file": "115 Hawker Fury FB10 F-AZXJ Hahnweide 2011 02.jpg",
@@ -4584,10 +4165,7 @@
               ],
               "pct": 1.4
             }
-          ],
-          "photographer": "julian herzog (website)",
-          "datetime": "2011-09-03 14:15",
-          "device": "NIKON CORPORATION NIKON D5000"
+          ]
         },
         {
           "file": "1915 Ford Mod. T Touring 03.09.2011 Cloppenburg 096 (2).JPG",
@@ -4620,10 +4198,7 @@
               ],
               "pct": 30.5
             }
-          ],
-          "photographer": "martin v.",
-          "datetime": "2011-09-03 12:44",
-          "device": "EASTMAN KODAK COMPANY KODAK CX7530 ZOOM DIGITAL CAMERA"
+          ]
         },
         {
           "file": "2. Former St. Helens Hotel in Chehalis.jpg",
@@ -4656,11 +4231,7 @@
               ],
               "pct": 28.1
             }
-          ],
-          "photographer": "steven pavlov",
-          "datetime": "2011-09-03",
-          "device": "Canon EOS 50D",
-          "location": "46.6648, -122.9692"
+          ]
         },
         {
           "file": "A village hut roof ruined by stroam - 2.jpg",
@@ -4693,10 +4264,7 @@
               ],
               "pct": 22.7
             }
-          ],
-          "photographer": "ferdous",
-          "datetime": "2011-09-03",
-          "device": "Nokia 3120classic"
+          ]
         },
         {
           "file": "Alba Iulia National Museum of the Union 2011 - Celtic Pot with Anthropomorphic Handles from Blandiana.JPG",
@@ -4729,11 +4297,7 @@
               ],
               "pct": 27.2
             }
-          ],
-          "photographer": "codrin.b",
-          "datetime": "2011-09-03 07:58:35",
-          "device": "Canon PowerShot S5 IS",
-          "location": "46.0683, 23.5707"
+          ]
         },
         {
           "file": "Alpine indian paintbrush (60da8b472d3e4cabae904f284610176b).JPG",
@@ -4766,10 +4330,7 @@
               ],
               "pct": 27.5
             }
-          ],
-          "photographer": "steve redman (mora)",
-          "datetime": "2011-09-03",
-          "device": "SONY DSC-H2"
+          ]
         },
         {
           "file": "'Eric' and his Antlers 2011 - week 23 (6112035324) (cropped).jpg",
@@ -4802,10 +4363,7 @@
               ],
               "pct": 27.1
             }
-          ],
-          "photographer": "peter trimming from croydon, england",
-          "datetime": "2011-09-03 12:29",
-          "device": "SONY DSLR-A450"
+          ]
         },
         {
           "file": "Ceylalictus variegatus female 1.jpg",
@@ -4838,11 +4396,7 @@
               ],
               "pct": 23.1
             }
-          ],
-          "photographer": "gideon pisanty (gidip) גדעון פיזנטי",
-          "datetime": "2011-09-03 04:52:12",
-          "device": "NIKON CORPORATION NIKON D7000",
-          "location": "31.9063, 34.8250"
+          ]
         }
       ]
     },
@@ -4880,9 +4434,7 @@
               ],
               "pct": 29.2
             }
-          ],
-          "photographer": "shikabane taro",
-          "datetime": "2010-09-03"
+          ]
         },
         {
           "file": "- panoramio - sokol336 (20).jpg",
@@ -4915,10 +4467,7 @@
               ],
               "pct": 26.8
             }
-          ],
-          "photographer": "sokol336",
-          "datetime": "2010-09-03",
-          "device": "Sony Ericsson W800i"
+          ]
         },
         {
           "file": "- panoramio - Stevan.Karalic (1).jpg",
@@ -4951,10 +4500,7 @@
               ],
               "pct": 11.2
             }
-          ],
-          "photographer": "stevan.karalic",
-          "datetime": "2010-09-03",
-          "device": "HTC Hero"
+          ]
         },
         {
           "file": "015 MicheleGarrett (15776110592).jpg",
@@ -4987,10 +4533,7 @@
               ],
               "pct": 27.3
             }
-          ],
-          "photographer": "ghrcdaac",
-          "datetime": "2010-09-03 13:57",
-          "device": "OLYMPUS IMAGING CORP. FE20,X15,C25"
+          ]
         },
         {
           "file": "12-promotional-models-Fenasucro-2010.JPG",
@@ -5023,10 +4566,7 @@
               ],
               "pct": 25.1
             }
-          ],
-          "photographer": "elmschrat coaching38",
-          "datetime": "2010-09-03",
-          "device": "Samsung Techwin VLUU L100, M100  / Samsung L100, M100"
+          ]
         },
         {
           "file": "2ne1 - 5739353704.jpg",
@@ -5059,9 +4599,7 @@
               ],
               "pct": 8.0
             }
-          ],
-          "photographer": "korea.net / korean culture and information service",
-          "datetime": "2010-09-03 23:13:22"
+          ]
         },
         {
           "file": "Hotel Meierhof Lobby.jpg",
@@ -5094,10 +4632,7 @@
               ],
               "pct": 19.1
             }
-          ],
-          "photographer": "hotelmeierhof",
-          "datetime": "2010-09-03 16:04:01",
-          "device": "Hasselblad H3D-22"
+          ]
         },
         {
           "file": "3.September.2010.jpg",
@@ -5130,10 +4665,7 @@
               ],
               "pct": 18.1
             }
-          ],
-          "photographer": "alexandermorosow",
-          "datetime": "2010-09-03 14:11",
-          "device": "Canon EOS 1000D"
+          ]
         },
         {
           "file": "Dmitry Medvedev in Azerbaijan 3 September 2010-1.jpeg",
@@ -5166,9 +4698,7 @@
               ],
               "pct": 22.3
             }
-          ],
-          "photographer": "presidential press and information office",
-          "datetime": "2010-09-03"
+          ]
         }
       ]
     },
@@ -5176,7 +4706,7 @@
       "year": 2009,
       "photos": [
         {
-          "file": "2009 09 03 Düsseldorf 155800 (3903311296).jpg",
+          "file": "2009 09 03 D\u00fcsseldorf 155800 (3903311296).jpg",
           "hex": "#707774",
           "palette": [
             {
@@ -5206,10 +4736,7 @@
               ],
               "pct": 25.0
             }
-          ],
-          "photographer": "norbert schnitzler from aachen, deutschland, nrw",
-          "datetime": "2009-09-03 15:58",
-          "device": "Canon PowerShot A470"
+          ]
         },
         {
           "file": "8th Green @ Redastle Golf Club - panoramio.jpg",
@@ -5242,10 +4769,7 @@
               ],
               "pct": 14.3
             }
-          ],
-          "photographer": "murphyl",
-          "datetime": "2009-09-03",
-          "device": "Nokia N95 8GB"
+          ]
         },
         {
           "file": "Adria Altea 390 PS r.jpg",
@@ -5278,10 +4802,7 @@
               ],
               "pct": 19.6
             }
-          ],
-          "photographer": "norbert schnitzler",
-          "datetime": "2009-09-03 14:32",
-          "device": "Canon PowerShot A470"
+          ]
         },
         {
           "file": "Animal transport 1.jpg",
@@ -5314,10 +4835,7 @@
               ],
               "pct": 27.5
             }
-          ],
-          "photographer": "izvora",
-          "datetime": "2009-09-03 09:42",
-          "device": "Hewlett-Packard Photosmart M527"
+          ]
         },
         {
           "file": "Arghul Egypt Kopie.jpg",
@@ -5350,10 +4868,7 @@
               ],
               "pct": 6.8
             }
-          ],
-          "photographer": "joan derivative work magentagreen (svg version)",
-          "datetime": "1970-00-00 00:00:00",
-          "device": "Canon EOS 400D DIGITAL"
+          ]
         },
         {
           "file": "Astypalaia.JPG",
@@ -5386,10 +4901,7 @@
               ],
               "pct": 25.9
             }
-          ],
-          "photographer": "hanzz",
-          "datetime": "2009-09-03",
-          "device": "Canon PowerShot D10"
+          ]
         },
         {
           "file": "Atlantic Airways OY-HSR.jpg",
@@ -5422,10 +4934,7 @@
               ],
               "pct": 21.5
             }
-          ],
-          "photographer": "f.a.e.",
-          "datetime": "2009-09-03 13:59",
-          "device": "Canon EOS 400D DIGITAL"
+          ]
         },
         {
           "file": "Bambine sul muretto.jpg",
@@ -5458,9 +4967,7 @@
               ],
               "pct": 29.9
             }
-          ],
-          "photographer": "maohi",
-          "datetime": "2009-09-03 15:13:27"
+          ]
         },
         {
           "file": "SML Books 20090903.10D.52431 SML (3883712264).jpg",
@@ -5493,11 +5000,7 @@
               ],
               "pct": 12.5
             }
-          ],
-          "photographer": "see-ming lee from hong kong sar, china",
-          "datetime": "2009-09-03 00:20",
-          "device": "Canon EOS 10D",
-          "location": "40.6980, -73.9849"
+          ]
         },
         {
           "file": "Self Portrait - Workout (5831198560).jpg",
@@ -5530,10 +5033,7 @@
               ],
               "pct": 20.9
             }
-          ],
-          "photographer": "jen b",
-          "datetime": "2009-09-03 11:51",
-          "device": "Canon EOS DIGITAL REBEL XSi"
+          ]
         }
       ]
     },
@@ -5541,7 +5041,7 @@
       "year": 2008,
       "photos": [
         {
-          "file": "1000Jahr Eiche Vörie.jpg",
+          "file": "1000Jahr Eiche V\u00f6rie.jpg",
           "hex": "#7a8674",
           "palette": [
             {
@@ -5571,10 +5071,7 @@
               ],
               "pct": 21.4
             }
-          ],
-          "photographer": "losch",
-          "datetime": "2008-09-03",
-          "device": "Canon EOS 400D DIGITAL"
+          ]
         },
         {
           "file": "11th tram depot - 2008-09-03-001.jpg",
@@ -5607,10 +5104,7 @@
               ],
               "pct": 24.6
             }
-          ],
-          "photographer": "dinamik",
-          "datetime": "2008-09-03 18:58",
-          "device": "Konica Minolta Photo Imaging, Inc. DiMAGE G600"
+          ]
         },
         {
           "file": "A Leopard Frog sits in some water surrounded by green vegetation. (608debf5-6c81-486e-97e2-8bba278d4b05).jpg",
@@ -5643,10 +5137,7 @@
               ],
               "pct": 24.9
             }
-          ],
-          "photographer": "nps photo",
-          "datetime": "2008-09-03",
-          "device": "SONY DSC-H2"
+          ]
         },
         {
           "file": "Avenue of limes Podolsk.jpg",
@@ -5679,10 +5170,7 @@
               ],
               "pct": 13.6
             }
-          ],
-          "photographer": "переход артур",
-          "datetime": "2008-09-03 13:51",
-          "device": "SONY DSC-W150"
+          ]
         },
         {
           "file": "Baltiske Bahnhof in Skt. Petersburg - panoramio.jpg",
@@ -5715,10 +5203,7 @@
               ],
               "pct": 9.8
             }
-          ],
-          "photographer": "padolski",
-          "datetime": "2008-09-03",
-          "device": "OLYMPUS IMAGING CORP. FE280,X820,C520"
+          ]
         },
         {
           "file": "Bayerngold (Tantau 1990).JPG",
@@ -5751,13 +5236,10 @@
               ],
               "pct": 19.9
             }
-          ],
-          "photographer": "huhu. the original uploader was huhu at german wikipedia.",
-          "datetime": "2008-09-03 09:05",
-          "device": "NIKON CORPORATION NIKON D50"
+          ]
         },
         {
-          "file": "Brühl nach West.JPG",
+          "file": "Br\u00fchl nach West.JPG",
           "hex": "#6f6e6f",
           "palette": [
             {
@@ -5787,9 +5269,7 @@
               ],
               "pct": 20.2
             }
-          ],
-          "photographer": "lutzbruno",
-          "datetime": "2008-09-03"
+          ]
         },
         {
           "file": "Couvent de Caccia - Exterieur.JPG",
@@ -5822,10 +5302,7 @@
               ],
               "pct": 18.9
             }
-          ],
-          "photographer": "bcar",
-          "datetime": "2008-09-03 17:30",
-          "device": "Canon EOS 20D"
+          ]
         },
         {
           "file": "'02-'05 Saturn Vue (Orange Julep).JPG",
@@ -5858,10 +5335,7 @@
               ],
               "pct": 24.5
             }
-          ],
-          "photographer": "bull-doser",
-          "datetime": "2008-09-03",
-          "device": "Polaroid i531"
+          ]
         },
         {
           "file": "A forklift helps position a granite block near it's final resting place. (295c5f2d-2f39-4abb-b987-48c0dcc2211d).JPG",
@@ -5894,10 +5368,7 @@
               ],
               "pct": 24.5
             }
-          ],
-          "photographer": "nps",
-          "datetime": "2008-09-03",
-          "device": "NIKON E7900"
+          ]
         },
         {
           "file": "Devin Rowe 2009.jpg",
@@ -5930,10 +5401,7 @@
               ],
               "pct": 10.7
             }
-          ],
-          "photographer": "devin rowe",
-          "datetime": "2008-09-03 23:13:33",
-          "device": "NIKON COOLPIX S51"
+          ]
         }
       ]
     },
@@ -5971,13 +5439,10 @@
               ],
               "pct": 20.5
             }
-          ],
-          "photographer": "adomas t at lithuanian wikipedia",
-          "datetime": "2007-09-03",
-          "device": "SONY DSC-W100"
+          ]
         },
         {
-          "file": "249. Praça Duque Saldanha.JPG",
+          "file": "249. Pra\u00e7a Duque Saldanha.JPG",
           "hex": "#6f7178",
           "palette": [
             {
@@ -6007,10 +5472,7 @@
               ],
               "pct": 12.6
             }
-          ],
-          "photographer": "raf24",
-          "datetime": "2007-09-03 11:12",
-          "device": "KONICA MINOLTA CAMERA, Inc. DiMAGE G400"
+          ]
         },
         {
           "file": "Afghans Train Afghans With American Mentorship DVIDS55856.jpg",
@@ -6043,10 +5505,7 @@
               ],
               "pct": 25.8
             }
-          ],
-          "photographer": "master sgt. james varhegyi",
-          "datetime": "2007-09-03",
-          "device": "NIKON CORPORATION NIKON D2X"
+          ]
         },
         {
           "file": "AMZ-Kutno Tur.jpg",
@@ -6079,10 +5538,7 @@
               ],
               "pct": 26.9
             }
-          ],
-          "photographer": "pibwl",
-          "datetime": "2007-09-03 15:01",
-          "device": "Minolta Co., Ltd. DiMAGE 7i"
+          ]
         },
         {
           "file": "Blankenberge - sept. 2007.jpg",
@@ -6115,10 +5571,7 @@
               ],
               "pct": 15.0
             }
-          ],
-          "photographer": "spotter2",
-          "datetime": "2007-09-03 16:27",
-          "device": "Traveler DC-8300"
+          ]
         },
         {
           "file": "Blumentreppe Bodensee-Insel Mainau.JPG",
@@ -6151,13 +5604,10 @@
               ],
               "pct": 16.1
             }
-          ],
-          "photographer": "elkawe",
-          "datetime": "2007-09-03 11:12",
-          "device": "Canon PowerShot A460"
+          ]
         },
         {
-          "file": "Buenos Aires - Subte - Ángel Gallardo.jpg",
+          "file": "Buenos Aires - Subte - \u00c1ngel Gallardo.jpg",
           "hex": "#374c42",
           "palette": [
             {
@@ -6187,10 +5637,7 @@
               ],
               "pct": 8.9
             }
-          ],
-          "photographer": "galio 03:10, 21 september 2007 (utc)",
-          "datetime": "2007-09-03 11:01",
-          "device": "SONY DSC-S600"
+          ]
         },
         {
           "file": "07-09-03 09-40-16 Mallat speaking (cropped).jpg",
@@ -6223,10 +5670,7 @@
               ],
               "pct": 26.5
             }
-          ],
-          "photographer": "phil strahl",
-          "datetime": "2007-09-03",
-          "device": "SONY DSLR-A100"
+          ]
         }
       ]
     },
@@ -6234,7 +5678,7 @@
       "year": 2006,
       "photos": [
         {
-          "file": "101 2886-RK-Palácio Campos Eliseos- jardim -SP.jpg",
+          "file": "101 2886-RK-Pal\u00e1cio Campos Eliseos- jardim -SP.jpg",
           "hex": "#859294",
           "palette": [
             {
@@ -6264,10 +5708,7 @@
               ],
               "pct": 28.7
             }
-          ],
-          "photographer": "regina kalmann",
-          "datetime": "2006-09-03 14:00",
-          "device": "EASTMAN KODAK COMPANY KODAK C360 ZOOM DIGITAL CAMERA"
+          ]
         },
         {
           "file": "2007 Children's Group Honorable Mention- Drakes Sail (f864ae91-155d-4519-3e31-200af88e369f).jpg",
@@ -6300,9 +5741,7 @@
               ],
               "pct": 21.9
             }
-          ],
-          "photographer": "nps",
-          "datetime": "2006-09-03"
+          ]
         },
         {
           "file": "Aloe vera with shoots 3.jpg",
@@ -6335,10 +5774,7 @@
               ],
               "pct": 27.3
             }
-          ],
-          "photographer": "ragesoss",
-          "datetime": "2006-09-03",
-          "device": "Canon PowerShot S200"
+          ]
         },
         {
           "file": "AntimachusMedaille.jpg",
@@ -6371,10 +5807,7 @@
               ],
               "pct": 30.0
             }
-          ],
-          "photographer": "world imaging",
-          "datetime": "2006-09-03",
-          "device": "Canon PowerShot S110"
+          ]
         },
         {
           "file": "Aqueduto-1.JPG",
@@ -6407,10 +5840,7 @@
               ],
               "pct": 26.1
             }
-          ],
-          "photographer": "albino berenguer~commonswiki",
-          "datetime": "2006-09-03",
-          "device": "BenQ DC E300"
+          ]
         },
         {
           "file": "Baardwijk - Loeffstraat.JPG",
@@ -6443,10 +5873,7 @@
               ],
               "pct": 17.4
             }
-          ],
-          "photographer": "hullie",
-          "datetime": "2006-09-03",
-          "device": "Canon EOS 350D DIGITAL"
+          ]
         },
         {
           "file": "Bahnuebergang Unbeschrankt Spiesswald.jpg",
@@ -6479,10 +5906,7 @@
               ],
               "pct": 24.8
             }
-          ],
-          "photographer": "mde",
-          "datetime": "2006-09-03",
-          "device": "OLYMPUS CORPORATION C740UZ"
+          ]
         },
         {
           "file": "Colorful ropes heap on Reykjavik port 2.jpg",
@@ -6515,10 +5939,7 @@
               ],
               "pct": 30.7
             }
-          ],
-          "photographer": "syced",
-          "datetime": "2006-09-03 17:23",
-          "location": "64.1531, -21.9370"
+          ]
         },
         {
           "file": "Oil depot on Reykjavik port 2.jpg",
@@ -6551,10 +5972,7 @@
               ],
               "pct": 17.6
             }
-          ],
-          "photographer": "syced",
-          "datetime": "2006-09-03 16:30",
-          "location": "64.1604, -21.9421"
+          ]
         },
         {
           "file": "September 2006, Port of Reykjavik 27.jpg",
@@ -6587,10 +6005,7 @@
               ],
               "pct": 16.9
             }
-          ],
-          "photographer": "syced",
-          "datetime": "2006-09-03 17:09",
-          "location": "64.1531, -21.9370"
+          ]
         },
         {
           "file": "The first man (234654707).jpg",
@@ -6623,10 +6038,7 @@
               ],
               "pct": 2.1
             }
-          ],
-          "photographer": "gerry thomasen from nanaimo, canada",
-          "datetime": "2006-09-03 11:34",
-          "device": "Canon PowerShot A610"
+          ]
         },
         {
           "file": "Bancslrcroix.jpg",
@@ -6659,10 +6071,7 @@
               ],
               "pct": 26.0
             }
-          ],
-          "photographer": "tej~commonswiki",
-          "datetime": "2006-09-03",
-          "device": "Canon PowerShot A70"
+          ]
         }
       ]
     },
@@ -6700,10 +6109,7 @@
               ],
               "pct": 29.0
             }
-          ],
-          "photographer": "u.s. navy photo by photographer's mate 3rd class jay c. pugh (released).",
-          "datetime": "2005-09-03",
-          "device": "NIKON CORPORATION NIKON D1H"
+          ]
         },
         {
           "file": "050903-M-6958N-002.jpg",
@@ -6736,10 +6142,7 @@
               ],
               "pct": 2.2
             }
-          ],
-          "photographer": "private first class christopher d. nette",
-          "datetime": "2005-09-03",
-          "device": "Canon EOS 10D"
+          ]
         },
         {
           "file": "39910281 - Flickr - Moe.jpg",
@@ -6772,10 +6175,7 @@
               ],
               "pct": 11.0
             }
-          ],
-          "photographer": "stephan mosel from hamburg, germany",
-          "datetime": "2005-09-03 10:54",
-          "device": "OLYMPUS OPTICAL CO.,LTD C2Z,D520Z,C220Z"
+          ]
         },
         {
           "file": "Abtei Murbach Klostergarten.jpg",
@@ -6808,10 +6208,7 @@
               ],
               "pct": 27.8
             }
-          ],
-          "photographer": "alex anlicker~commonswiki",
-          "datetime": "2005-09-03",
-          "device": "NIKON CORPORATION NIKON D70"
+          ]
         },
         {
           "file": "AFSPC supports Katrina relief operations (2000551161).jpg",
@@ -6844,9 +6241,7 @@
               ],
               "pct": 21.9
             }
-          ],
-          "datetime": "2005-09-03",
-          "device": "NIKON CORPORATION NIKON D100"
+          ]
         },
         {
           "file": "Amanecer en Boca de Tocuyo.JPG",
@@ -6879,10 +6274,7 @@
               ],
               "pct": 16.9
             }
-          ],
-          "photographer": "fernando villafañe duarte",
-          "datetime": "2005-09-03 06:36:12",
-          "device": "Hewlett-Packard Photosmart M307"
+          ]
         },
         {
           "file": "Autostrada Soarelui.jpg",
@@ -6915,10 +6307,7 @@
               ],
               "pct": 20.4
             }
-          ],
-          "photographer": "olario~commonswiki",
-          "datetime": "2005-09-03",
-          "device": "Canon PowerShot A510"
+          ]
         },
         {
           "file": "050903 Paris 040 Cluny jardin roseto.JPG",
@@ -6951,10 +6340,7 @@
               ],
               "pct": 15.7
             }
-          ],
-          "photographer": "user:lalupa",
-          "datetime": "2005-09-03",
-          "device": "KONICA MINOLTA DiMAGE E40"
+          ]
         },
         {
           "file": "FEMA - 15370 - Photograph by Andrea Booher taken on 09-03-2005 in Texas.jpg",
@@ -6987,9 +6373,7 @@
               ],
               "pct": 30.8
             }
-          ],
-          "photographer": "andrea booher",
-          "datetime": "2005-09-03"
+          ]
         }
       ]
     },
@@ -7027,10 +6411,7 @@
               ],
               "pct": 14.2
             }
-          ],
-          "photographer": "a. kniesel",
-          "datetime": "2004-09-03 18:56",
-          "device": "Canon EOS 300D DIGITAL"
+          ]
         },
         {
           "file": "Archway in Central Park - Flickr - Penningtron.jpg",
@@ -7063,10 +6444,7 @@
               ],
               "pct": 17.4
             }
-          ],
-          "photographer": "brian pennington from brooklyn, ny, usa",
-          "datetime": "2004-09-03 15:05",
-          "device": "OLYMPUS OPTICAL CO.,LTD C860L,D360L"
+          ]
         },
         {
           "file": "Black 996 GT3 and red 360 CS (58840857).jpg",
@@ -7099,10 +6477,7 @@
               ],
               "pct": 11.0
             }
-          ],
-          "photographer": "curt smith from bellevue, wa, usa",
-          "datetime": "2004-09-03 17:01",
-          "device": "SONY CD MAVICA"
+          ]
         },
         {
           "file": "Cabo de Palos - Flickr - IHQ.jpg",
@@ -7135,10 +6510,7 @@
               ],
               "pct": 14.4
             }
-          ],
-          "photographer": "i hq from cabo de palos, españa",
-          "datetime": "2004-09-03 12:09",
-          "device": "Canon EOS 300D DIGITAL"
+          ]
         },
         {
           "file": "Castrop-Stadtmittelpunkt.jpg",
@@ -7171,10 +6543,7 @@
               ],
               "pct": 23.1
             }
-          ],
-          "photographer": "selisky",
-          "datetime": "2004-09-03",
-          "device": "Minolta Co., Ltd. DiMAGE 7"
+          ]
         },
         {
           "file": "Cereal.jpg",
@@ -7207,10 +6576,7 @@
               ],
               "pct": 26.8
             }
-          ],
-          "photographer": "jorge barrios",
-          "datetime": "2004-09-03 12:00",
-          "device": "FUJI PHOTO FILM CO., LTD. SP-1500"
+          ]
         },
         {
           "file": "DSC06185.JPG - Flickr - LarimdaME.jpg",
@@ -7243,10 +6609,7 @@
               ],
               "pct": 14.5
             }
-          ],
-          "photographer": "gene han from new york city, usa",
-          "datetime": "2004-09-03 16:53",
-          "device": "SONY CYBERSHOT"
+          ]
         },
         {
           "file": "Mosque.2.JPG",
@@ -7279,9 +6642,7 @@
               ],
               "pct": 16.4
             }
-          ],
-          "datetime": "2004-01-17 04:57:59",
-          "device": "DV/DSC/MP3/VR DV"
+          ]
         },
         {
           "file": "Alte-Post.jpg",
@@ -7314,10 +6675,7 @@
               ],
               "pct": 30.7
             }
-          ],
-          "photographer": "wikiheinz",
-          "datetime": "2004-09-03",
-          "device": "Canon DIGITAL IXUS 400"
+          ]
         }
       ]
     },
@@ -7355,10 +6713,7 @@
               ],
               "pct": 9.7
             }
-          ],
-          "photographer": "laurent deschodt",
-          "datetime": "2003-09-03",
-          "device": "PENTAX Corporation PENTAX Optio 550"
+          ]
         },
         {
           "file": "Angels On Track Billboard - panoramio.jpg",
@@ -7391,10 +6746,7 @@
               ],
               "pct": 14.8
             }
-          ],
-          "photographer": "dgray531",
-          "datetime": "2003-09-03",
-          "device": "OLYMPUS OPTICAL CO.,LTD C150,D390"
+          ]
         },
         {
           "file": "Defense.gov News Photo 030903-F-2828D-030.jpg",
@@ -7427,10 +6779,7 @@
               ],
               "pct": 20.0
             }
-          ],
-          "photographer": "tech. sgt. andy dunaway, u.s. air force",
-          "datetime": "2003-09-03",
-          "device": "NIKON CORPORATION NIKON D1X"
+          ]
         },
         {
           "file": "Minarets Sierra Nevada.jpg",
@@ -7463,9 +6812,7 @@
               ],
               "pct": 28.1
             }
-          ],
-          "photographer": "own work",
-          "datetime": "2003-09-03"
+          ]
         },
         {
           "file": "NGC 3370 Hi.jpg",
@@ -7498,9 +6845,7 @@
               ],
               "pct": 9.1
             }
-          ],
-          "photographer": "nasa/esa, the hubble heritage team and a. riess (stsci)",
-          "datetime": "2003-09-03"
+          ]
         },
         {
           "file": "RV Belgica.jpg",
@@ -7533,10 +6878,7 @@
               ],
               "pct": 12.8
             }
-          ],
-          "photographer": "hans hillewaert (lycaon)",
-          "datetime": "2003-09-03 14:16",
-          "device": "EASTMAN KODAK COMPANY KODAK DX6340 ZOOM DIGITAL CAMERA"
+          ]
         },
         {
           "file": "Ho Chi Minh mausoleum in 2003.jpg",
@@ -7569,9 +6911,7 @@
               ],
               "pct": 26.9
             }
-          ],
-          "photographer": "syced",
-          "datetime": "2003-09-03"
+          ]
         }
       ]
     },
@@ -7609,10 +6949,7 @@
               ],
               "pct": 4.7
             }
-          ],
-          "photographer": "lipnopower",
-          "datetime": "2002-09-03 07:43",
-          "device": "Canon PowerShot A20"
+          ]
         },
         {
           "file": "El Carmen bei Ribadesella - panoramio.jpg",
@@ -7645,11 +6982,7 @@
               ],
               "pct": 28.9
             }
-          ],
-          "photographer": "gesoe62",
-          "datetime": "2002-09-03",
-          "device": "Canon DIGITAL IXUS 300",
-          "location": "43.4547, -5.0997"
+          ]
         },
         {
           "file": "US Navy 020903-N-1974E-002 A burial at sea detail commends the remains of a shipmate to the sea.jpg",
@@ -7682,10 +7015,7 @@
               ],
               "pct": 21.4
             }
-          ],
-          "photographer": "u.s. navy photo by photographer’s mate airman kristi earl.",
-          "datetime": "2002-09-03",
-          "device": "NIKON CORPORATION NIKON D1"
+          ]
         },
         {
           "file": "US Vehicles at Bagram.jpg",
@@ -7718,12 +7048,10 @@
               ],
               "pct": 18.0
             }
-          ],
-          "photographer": "eric e. hughes",
-          "datetime": "2002-09-03"
+          ]
         },
         {
-          "file": "Wohnhaus Bademer Straße 23 Kyllburg.jpg",
+          "file": "Wohnhaus Bademer Stra\u00dfe 23 Kyllburg.jpg",
           "hex": "#796b66",
           "palette": [
             {
@@ -7753,10 +7081,7 @@
               ],
               "pct": 26.0
             }
-          ],
-          "photographer": "christian schmidt",
-          "datetime": "2002-09-03 17:32",
-          "device": "SEIKO EPSON CORP. PhotoPC 3000Z"
+          ]
         },
         {
           "file": "Bf Leipzig Hbf, VT 08 503.jpg",
@@ -7789,9 +7114,7 @@
               ],
               "pct": 22.0
             }
-          ],
-          "photographer": "falk2",
-          "datetime": "2002-09-03"
+          ]
         },
         {
           "file": "Noordwijk darksunset.jpg",
@@ -7824,9 +7147,7 @@
               ],
               "pct": 28.2
             }
-          ],
-          "photographer": "rudolphous",
-          "datetime": "2002-09-03"
+          ]
         },
         {
           "file": "Ribadesella, Asturia - panoramio.jpg",
@@ -7859,11 +7180,7 @@
               ],
               "pct": 29.9
             }
-          ],
-          "photographer": "gesoe62",
-          "datetime": "2002-09-03",
-          "device": "Canon DIGITAL IXUS 300",
-          "location": "43.4656, -5.0760"
+          ]
         },
         {
           "file": "Noordwijk red sparkling sunset.jpg",
@@ -7896,10 +7213,7 @@
               ],
               "pct": 10.2
             }
-          ],
-          "photographer": "rudolphous",
-          "datetime": "2002-09-03 20:16:00",
-          "device": "Canon PowerShot S40"
+          ]
         }
       ]
     },
@@ -7907,7 +7221,7 @@
       "year": 2001,
       "photos": [
         {
-          "file": "Президент Кыргызстана Аскар Акаев (в центре), профессор Леонид Левитин (справа).jpg",
+          "file": "\u041f\u0440\u0435\u0437\u0438\u0434\u0435\u043d\u0442 \u041a\u044b\u0440\u0433\u044b\u0437\u0441\u0442\u0430\u043d\u0430 \u0410\u0441\u043a\u0430\u0440 \u0410\u043a\u0430\u0435\u0432 (\u0432 \u0446\u0435\u043d\u0442\u0440\u0435), \u043f\u0440\u043e\u0444\u0435\u0441\u0441\u043e\u0440 \u041b\u0435\u043e\u043d\u0438\u0434 \u041b\u0435\u0432\u0438\u0442\u0438\u043d (\u0441\u043f\u0440\u0430\u0432\u0430).jpg",
           "hex": "#5b4446",
           "palette": [
             {
@@ -7937,9 +7251,7 @@
               ],
               "pct": 17.0
             }
-          ],
-          "photographer": "evgeni levitin",
-          "datetime": "2001-09-03"
+          ]
         },
         {
           "file": "Hochkar radio tower.jpg",
@@ -7972,11 +7284,7 @@
               ],
               "pct": 23.6
             }
-          ],
-          "photographer": "herbert ortner, vienna, austria",
-          "datetime": "2001-09-03",
-          "device": "NIKON E990",
-          "location": "47.7086, 14.9132"
+          ]
         },
         {
           "file": "Chambord - La _Vie en rose_ - panoramio.jpg",
@@ -8009,14 +7317,10 @@
               ],
               "pct": 20.5
             }
-          ],
-          "photographer": "giomodica",
-          "datetime": "2001-09-03",
-          "device": "EASTMAN KODAK COMPANY KODAK DC240 ZOOM DIGITAL CAMERA",
-          "location": "47.6120, 1.5185"
+          ]
         },
         {
-          "file": "Майский снег 1.jpg",
+          "file": "\u041c\u0430\u0439\u0441\u043a\u0438\u0439 \u0441\u043d\u0435\u0433 1.jpg",
           "hex": "#6e6e51",
           "palette": [
             {
@@ -8046,10 +7350,7 @@
               ],
               "pct": 13.5
             }
-          ],
-          "photographer": "aysa t",
-          "datetime": "2001-09-03 04:30",
-          "device": "Canon EOS 5D"
+          ]
         },
         {
           "file": "Cafe Niebaum corner with taxi, San Francisco California 2001.jpg",
@@ -8082,10 +7383,7 @@
               ],
               "pct": 29.9
             }
-          ],
-          "photographer": "clinton steeds from los angeles, usa",
-          "datetime": "2001-09-03",
-          "device": "EASTMAN KODAK COMPANY KODAK DC4800 ZOOM DIGITAL CAMERA"
+          ]
         },
         {
           "file": "Jesus is coming... look busy - Flickr - pnoeric.jpg",
@@ -8118,10 +7416,7 @@
               ],
               "pct": 1.9
             }
-          ],
-          "photographer": "eric mueller from los angeles, california, usa",
-          "datetime": "2001-09-03 20:54",
-          "device": "Canon PowerShot S110"
+          ]
         },
         {
           "file": "Line2619 - Flickr - NOAA Photo Library.jpg",
@@ -8154,9 +7449,7 @@
               ],
               "pct": 25.6
             }
-          ],
-          "photographer": "mary hollinger, nesdis/nodc biologist, noaa.",
-          "datetime": "2001-09-03"
+          ]
         },
         {
           "file": "California Bank Trust in San Francisco - 2001.jpg",
@@ -8189,10 +7482,7 @@
               ],
               "pct": 30.0
             }
-          ],
-          "photographer": "clinton steeds from los angeles, usa",
-          "datetime": "2001-09-03",
-          "device": "EASTMAN KODAK COMPANY KODAK DC4800 ZOOM DIGITAL CAMERA"
+          ]
         }
       ]
     },
@@ -8230,10 +7520,7 @@
               ],
               "pct": 31.5
             }
-          ],
-          "photographer": "user:lalupa",
-          "datetime": "2000-09-03",
-          "device": "OLYMPUS OPTICAL CO.,LTD C2000Z"
+          ]
         },
         {
           "file": "Defense.gov News Photo 000903-N-0268C-009.jpg",
@@ -8266,9 +7553,7 @@
               ],
               "pct": 23.2
             }
-          ],
-          "photographer": "airman apprentice mason cavazos, u.s. navy",
-          "datetime": "2000-09-03"
+          ]
         },
         {
           "file": "Vladimir Putin in Yuzhno-Sakhalinsk 3 September 2000-1.jpg",
@@ -8301,9 +7586,7 @@
               ],
               "pct": 13.7
             }
-          ],
-          "photographer": "presidential press and information office",
-          "datetime": "2000-09-03"
+          ]
         },
         {
           "file": "Flon 1 (8299133819).jpg",
@@ -8336,10 +7619,7 @@
               ],
               "pct": 17.7
             }
-          ],
-          "photographer": "alain rouiller",
-          "datetime": "2000-09-03 11:13",
-          "device": "Canon PowerShot S20"
+          ]
         },
         {
           "file": "Abtei Saint-Michel de Cuxa - Kreuzgang (NEM1324).jpg",
@@ -8372,9 +7652,7 @@
               ],
               "pct": 6.4
             }
-          ],
-          "photographer": "michael wittwer",
-          "datetime": "2000-09-03"
+          ]
         },
         {
           "file": "000910 tivoli v d este 08 stanze.jpg",
@@ -8407,10 +7685,7 @@
               ],
               "pct": 27.4
             }
-          ],
-          "photographer": "user:lalupa",
-          "datetime": "2000-09-03",
-          "device": "OLYMPUS OPTICAL CO.,LTD C2000Z"
+          ]
         },
         {
           "file": "Bloemencorso Zundert 2000 - Computerbody.jpg",
@@ -8443,9 +7718,7 @@
               ],
               "pct": 26.0
             }
-          ],
-          "photographer": "van hassel",
-          "datetime": "2000-09-03"
+          ]
         }
       ]
     },
@@ -8483,44 +7756,28 @@
               ],
               "pct": 17.8
             }
-          ],
-          "photographer": "steffen sledz (zone42)",
-          "datetime": "1999-09-03"
+          ]
         },
-        {
+                {
           "file": "USA meter stamp PV-G1.jpg",
           "hex": "#e6d5d3",
           "palette": [
             {
               "hex": "#fdfcfb",
-              "rgb": [
-                253,
-                252,
-                251
-              ],
+              "rgb": [253, 252, 251],
               "pct": 74.5
             },
             {
               "hex": "#c9958f",
-              "rgb": [
-                201,
-                149,
-                143
-              ],
+              "rgb": [201, 149, 143],
               "pct": 12.8
             },
             {
               "hex": "#7e332e",
-              "rgb": [
-                126,
-                51,
-                46
-              ],
+              "rgb": [126, 51, 46],
               "pct": 12.7
             }
-          ],
-          "photographer": "rick stambaugh",
-          "datetime": "1999-09-03"
+          ]
         }
       ]
     },
@@ -8558,45 +7815,28 @@
               ],
               "pct": 26.2
             }
-          ],
-          "photographer": "department of defense. american forces information service. defense visual information center. 1994",
-          "datetime": "1998-09-03 00:00:00"
+          ]
         },
-        {
+                {
           "file": "Lochranza Castle - geograph.org.uk - 639492.jpg",
           "hex": "#b5a5af",
           "palette": [
             {
               "hex": "#e3d9eb",
-              "rgb": [
-                227,
-                217,
-                235
-              ],
+              "rgb": [227, 217, 235],
               "pct": 59.1
             },
             {
               "hex": "#463129",
-              "rgb": [
-                70,
-                49,
-                41
-              ],
+              "rgb": [70, 49, 41],
               "pct": 21.3
             },
             {
               "hex": "#a2898b",
-              "rgb": [
-                162,
-                137,
-                139
-              ],
+              "rgb": [162, 137, 139],
               "pct": 19.6
             }
-          ],
-          "photographer": "jo turner",
-          "datetime": "1998-09-03",
-          "location": "55.7058, -5.2843"
+          ]
         },
         {
           "file": "Seamus Mallon address the Assemby of Northern Ireland in the Main Auditorium at Waterfront Hall (cropped).jpg",
@@ -8604,35 +7844,20 @@
           "palette": [
             {
               "hex": "#53393d",
-              "rgb": [
-                83,
-                57,
-                61
-              ],
+              "rgb": [83, 57, 61],
               "pct": 42.6
             },
             {
               "hex": "#5b6883",
-              "rgb": [
-                91,
-                104,
-                131
-              ],
+              "rgb": [91, 104, 131],
               "pct": 38.5
             },
             {
               "hex": "#edcbac",
-              "rgb": [
-                237,
-                203,
-                172
-              ],
+              "rgb": [237, 203, 172],
               "pct": 18.9
             }
-          ],
-          "photographer": "sharon farmer",
-          "datetime": "1998-09-03",
-          "device": "Nikon SUPER COOLSCAN 8000 ED"
+          ]
         },
         {
           "file": "Stepping stones - geograph.org.uk - 549045.jpg",
@@ -8640,35 +7865,20 @@
           "palette": [
             {
               "hex": "#5e5a5a",
-              "rgb": [
-                94,
-                90,
-                90
-              ],
+              "rgb": [94, 90, 90],
               "pct": 51.2
             },
             {
               "hex": "#9596ad",
-              "rgb": [
-                149,
-                150,
-                173
-              ],
+              "rgb": [149, 150, 173],
               "pct": 30.8
             },
             {
               "hex": "#fbfcfa",
-              "rgb": [
-                251,
-                252,
-                250
-              ],
+              "rgb": [251, 252, 250],
               "pct": 18.0
             }
-          ],
-          "photographer": "andrew norman",
-          "datetime": "1998-09-03",
-          "location": "57.1974, -6.1586"
+          ]
         }
       ]
     },
@@ -8706,9 +7916,7 @@
               ],
               "pct": 14.0
             }
-          ],
-          "photographer": "r. d. ward",
-          "datetime": "1997-09-03"
+          ]
         },
         {
           "file": "Defense.gov News Photo 970903-F-5131S-002.jpg",
@@ -8741,9 +7949,7 @@
               ],
               "pct": 18.4
             }
-          ],
-          "photographer": "senior airman jerome suson, u.s. air force",
-          "datetime": "1997-09-03"
+          ]
         },
         {
           "file": "Spacehab Logistics Double Module in Space Station Processing Facility for STS-86 (KSC-97PC1337).jpg",
@@ -8776,9 +7982,7 @@
               ],
               "pct": 13.9
             }
-          ],
-          "photographer": "nasa/ksc",
-          "datetime": "1997-09-03"
+          ]
         },
         {
           "file": "Interieur met stoommachine - Vollenhove - 20350524 - RCE.jpg",
@@ -8811,9 +8015,7 @@
               ],
               "pct": 26.6
             }
-          ],
-          "photographer": "ijsbrand heins",
-          "datetime": "1997-09-03"
+          ]
         },
         {
           "file": "History of fonars in Moscow 01.jpg",
@@ -8846,44 +8048,28 @@
               ],
               "pct": 24.6
             }
-          ],
-          "photographer": "главархив москвы",
-          "datetime": "1997-09-03"
+          ]
         },
-        {
+                {
           "file": "Byron McMackin.jpg",
           "hex": "#4e3f39",
           "palette": [
             {
               "hex": "#1e1c17",
-              "rgb": [
-                30,
-                28,
-                23
-              ],
+              "rgb": [30, 28, 23],
               "pct": 62.3
             },
             {
               "hex": "#8e6055",
-              "rgb": [
-                142,
-                96,
-                85
-              ],
+              "rgb": [142, 96, 85],
               "pct": 25.0
             },
             {
               "hex": "#bfaba7",
-              "rgb": [
-                191,
-                171,
-                167
-              ],
+              "rgb": [191, 171, 167],
               "pct": 12.7
             }
-          ],
-          "photographer": "slinkytrashboat",
-          "datetime": "1997-09-03"
+          ]
         },
         {
           "file": "Waterfront in Athlone - geograph.org.uk - 257908.jpg",
@@ -8891,34 +8077,20 @@
           "palette": [
             {
               "hex": "#f5f9f9",
-              "rgb": [
-                245,
-                249,
-                249
-              ],
+              "rgb": [245, 249, 249],
               "pct": 43.9
             },
             {
               "hex": "#868c88",
-              "rgb": [
-                134,
-                140,
-                136
-              ],
+              "rgb": [134, 140, 136],
               "pct": 29.2
             },
             {
               "hex": "#3a3b37",
-              "rgb": [
-                58,
-                59,
-                55
-              ],
+              "rgb": [58, 59, 55],
               "pct": 26.9
             }
-          ],
-          "photographer": "stanley howe",
-          "datetime": "1997-09-03"
+          ]
         }
       ]
     },
@@ -8956,9 +8128,7 @@
               ],
               "pct": 13.6
             }
-          ],
-          "photographer": "department of defense. american forces information service. defense visual information center. 1994",
-          "datetime": "1996-09-03 00:00:00"
+          ]
         },
         {
           "file": "Bordeaux 1996 (Ct281201).jpg",
@@ -8991,9 +8161,7 @@
               ],
               "pct": 25.1
             }
-          ],
-          "photographer": "michael wittwer",
-          "datetime": "1996-09-03"
+          ]
         },
         {
           "file": "Defense.gov News Photo 960903-N-00000-001.jpg",
@@ -9026,9 +8194,7 @@
               ],
               "pct": 14.3
             }
-          ],
-          "photographer": "u.s. department of defence",
-          "datetime": "1996-09-03"
+          ]
         },
         {
           "file": "Defense.gov News Photo 960903-N-8202E-004.jpg",
@@ -9061,9 +8227,7 @@
               ],
               "pct": 2.2
             }
-          ],
-          "photographer": "petty officer 1st class wayne w. edwards, u.s. navy",
-          "datetime": "1996-09-03"
+          ]
         },
         {
           "file": "Cortinarius timiskamingensis Malloch, Ammirati, Liimat. & Niskanen 592875.jpg",
@@ -9096,10 +8260,7 @@
               ],
               "pct": 15.0
             }
-          ],
-          "photographer": "this image was created by user david malloch (david_malloch) at mushroom observer, a source for mycological images.you can contact this user here.",
-          "datetime": "1996-09-03",
-          "location": "48.0773, -80.3645"
+          ]
         },
         {
           "file": "18e eeuwse schouw in de consistorie, na de restauratie - Waspik - 20401790 - RCE.jpg",
@@ -9132,9 +8293,7 @@
               ],
               "pct": 4.6
             }
-          ],
-          "photographer": "j.p. de koning",
-          "datetime": "1996-09-03"
+          ]
         },
         {
           "file": "Exterieur OVERZICHT VOORGEVEL, LINKER ZIJGEVEL - Waspik - 20339387 - RCE.jpg",
@@ -9167,9 +8326,7 @@
               ],
               "pct": 12.3
             }
-          ],
-          "photographer": "koning, de (fotograaf)",
-          "datetime": "1996-09-03"
+          ]
         }
       ]
     },
@@ -9207,44 +8364,28 @@
               ],
               "pct": 17.3
             }
-          ],
-          "photographer": "stefan fussan",
-          "datetime": "1995-09-03"
+          ]
         },
-        {
+                {
           "file": "Dave Widell (cropped).jpg",
           "hex": "#72777d",
           "palette": [
             {
               "hex": "#788483",
-              "rgb": [
-                120,
-                132,
-                131
-              ],
+              "rgb": [120, 132, 131],
               "pct": 40.5
             },
             {
               "hex": "#2b2930",
-              "rgb": [
-                43,
-                41,
-                48
-              ],
+              "rgb": [43, 41, 48],
               "pct": 36.2
             },
             {
               "hex": "#d7dbe7",
-              "rgb": [
-                215,
-                219,
-                231
-              ],
+              "rgb": [215, 219, 231],
               "pct": 23.3
             }
-          ],
-          "photographer": "james l. gaines",
-          "datetime": "1995-09-03"
+          ]
         },
         {
           "file": "Converted railway route, Britannia - geograph.org.uk - 235858.jpg",
@@ -9252,36 +8393,22 @@
           "palette": [
             {
               "hex": "#787969",
-              "rgb": [
-                120,
-                121,
-                105
-              ],
+              "rgb": [120, 121, 105],
               "pct": 44.8
             },
             {
               "hex": "#afa38c",
-              "rgb": [
-                175,
-                163,
-                140
-              ],
+              "rgb": [175, 163, 140],
               "pct": 31.6
             },
             {
               "hex": "#f8f7f8",
-              "rgb": [
-                248,
-                247,
-                248
-              ],
+              "rgb": [248, 247, 248],
               "pct": 23.6
             }
-          ],
-          "photographer": "stephen craven",
-          "datetime": "1995-09-03",
-          "location": "53.6894, -2.1820"
+          ]
         }
+        
       ]
     }
   ]

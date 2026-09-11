@@ -167,69 +167,6 @@
               "pct": 18.5
             }
           ]
-        },
-        {
-          "file": "Aitana Bonmatí.jpg",
-          "hex": "#8d8d72",
-          "palette": [
-            {
-              "hex": "#ae9b50",
-              "rgb": [174, 155, 80],
-              "pct": 51.6
-            },
-            {
-              "hex": "#9fbed8",
-              "rgb": [159, 190, 216],
-              "pct": 24.7
-            },
-            {
-              "hex": "#323c51",
-              "rgb": [50, 60, 81],
-              "pct": 23.7
-            }
-          ]
-        },
-        {
-          "file": "Cabina de conducción de un tren llegando al Apeadero Posadas, Misiones.jpg",
-          "hex": "#6a665c",
-          "palette": [
-            {
-              "hex": "#201f20",
-              "rgb": [32, 31, 32],
-              "pct": 44.9
-            },
-            {
-              "hex": "#83796a",
-              "rgb": [131, 121, 106],
-              "pct": 35.0
-            },
-            {
-              "hex": "#e3e5c9",
-              "rgb": [227, 229, 201],
-              "pct": 20.1
-            }
-          ]
-        },
-        {
-          "file": "Chapiscamento da fachada do GE Sen Ovídio Teixeira (25589).jpg",
-          "hex": "#787977",
-          "palette": [
-            {
-              "hex": "#706d68",
-              "rgb": [112, 109, 104],
-              "pct": 47.5
-            },
-            {
-              "hex": "#b8bfc4",
-              "rgb": [184, 191, 196],
-              "pct": 32.3
-            },
-            {
-              "hex": "#23261f",
-              "rgb": [35, 38, 31],
-              "pct": 20.2
-            }
-          ]
         }
       ]
     },
@@ -2753,6 +2690,39 @@
                 109
               ],
               "pct": 19.0
+            }
+          ]
+        },
+        {
+          "file": "Kreisgrabenanlage P\u00f6mmelte 15.jpg",
+          "hex": "#8b8d83",
+          "palette": [
+            {
+              "hex": "#c6d5e7",
+              "rgb": [
+                198,
+                213,
+                231
+              ],
+              "pct": 38.2
+            },
+            {
+              "hex": "#796d55",
+              "rgb": [
+                121,
+                109,
+                85
+              ],
+              "pct": 32.3
+            },
+            {
+              "hex": "#555334",
+              "rgb": [
+                85,
+                83,
+                52
+              ],
+              "pct": 29.6
             }
           ]
         },
@@ -5777,6 +5747,39 @@
           ]
         },
         {
+          "file": "Amselfall.jpg",
+          "hex": "#646955",
+          "palette": [
+            {
+              "hex": "#272c20",
+              "rgb": [
+                39,
+                44,
+                32
+              ],
+              "pct": 42.7
+            },
+            {
+              "hex": "#6f765b",
+              "rgb": [
+                111,
+                118,
+                91
+              ],
+              "pct": 34.5
+            },
+            {
+              "hex": "#c7c7ae",
+              "rgb": [
+                199,
+                199,
+                174
+              ],
+              "pct": 22.8
+            }
+          ]
+        },
+        {
           "file": "AntimachusMedaille.jpg",
           "hex": "#95928d",
           "palette": [
@@ -7795,69 +7798,6 @@
               "pct": 26.2
             }
           ]
-        },
-                {
-          "file": "Lochranza Castle - geograph.org.uk - 639492.jpg",
-          "hex": "#b5a5af",
-          "palette": [
-            {
-              "hex": "#e3d9eb",
-              "rgb": [227, 217, 235],
-              "pct": 59.1
-            },
-            {
-              "hex": "#463129",
-              "rgb": [70, 49, 41],
-              "pct": 21.3
-            },
-            {
-              "hex": "#a2898b",
-              "rgb": [162, 137, 139],
-              "pct": 19.6
-            }
-          ]
-        },
-        {
-          "file": "Seamus Mallon address the Assemby of Northern Ireland in the Main Auditorium at Waterfront Hall (cropped).jpg",
-          "hex": "#73676d",
-          "palette": [
-            {
-              "hex": "#53393d",
-              "rgb": [83, 57, 61],
-              "pct": 42.6
-            },
-            {
-              "hex": "#5b6883",
-              "rgb": [91, 104, 131],
-              "pct": 38.5
-            },
-            {
-              "hex": "#edcbac",
-              "rgb": [237, 203, 172],
-              "pct": 18.9
-            }
-          ]
-        },
-        {
-          "file": "Stepping stones - geograph.org.uk - 549045.jpg",
-          "hex": "#8b8a90",
-          "palette": [
-            {
-              "hex": "#5e5a5a",
-              "rgb": [94, 90, 90],
-              "pct": 51.2
-            },
-            {
-              "hex": "#9596ad",
-              "rgb": [149, 150, 173],
-              "pct": 30.8
-            },
-            {
-              "hex": "#fbfcfa",
-              "rgb": [251, 252, 250],
-              "pct": 18.0
-            }
-          ]
         }
       ]
     },
@@ -8026,48 +7966,6 @@
                 36
               ],
               "pct": 24.6
-            }
-          ]
-        },
-                {
-          "file": "Byron McMackin.jpg",
-          "hex": "#4e3f39",
-          "palette": [
-            {
-              "hex": "#1e1c17",
-              "rgb": [30, 28, 23],
-              "pct": 62.3
-            },
-            {
-              "hex": "#8e6055",
-              "rgb": [142, 96, 85],
-              "pct": 25.0
-            },
-            {
-              "hex": "#bfaba7",
-              "rgb": [191, 171, 167],
-              "pct": 12.7
-            }
-          ]
-        },
-        {
-          "file": "Waterfront in Athlone - geograph.org.uk - 257908.jpg",
-          "hex": "#a2a6a4",
-          "palette": [
-            {
-              "hex": "#f5f9f9",
-              "rgb": [245, 249, 249],
-              "pct": 43.9
-            },
-            {
-              "hex": "#868c88",
-              "rgb": [134, 140, 136],
-              "pct": 29.2
-            },
-            {
-              "hex": "#3a3b37",
-              "rgb": [58, 59, 55],
-              "pct": 26.9
             }
           ]
         }
@@ -8344,49 +8242,12 @@
               "pct": 17.3
             }
           ]
-        },
-                {
-          "file": "Dave Widell (cropped).jpg",
-          "hex": "#72777d",
-          "palette": [
-            {
-              "hex": "#788483",
-              "rgb": [120, 132, 131],
-              "pct": 40.5
-            },
-            {
-              "hex": "#2b2930",
-              "rgb": [43, 41, 48],
-              "pct": 36.2
-            },
-            {
-              "hex": "#d7dbe7",
-              "rgb": [215, 219, 231],
-              "pct": 23.3
-            }
-          ]
-        },
-        {
-          "file": "Converted railway route, Britannia - geograph.org.uk - 235858.jpg",
-          "hex": "#a7a496",
-          "palette": [
-            {
-              "hex": "#787969",
-              "rgb": [120, 121, 105],
-              "pct": 44.8
-            },
-            {
-              "hex": "#afa38c",
-              "rgb": [175, 163, 140],
-              "pct": 31.6
-            },
-            {
-              "hex": "#f8f7f8",
-              "rgb": [248, 247, 248],
-              "pct": 23.6
-            }
-          ]
-        },
+        }
+      ]
+    },
+    {
+      "year": 1993,
+      "photos": [
         {
           "file": "Artist as Superman.jpg",
           "hex": "#373737",

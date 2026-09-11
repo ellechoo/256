@@ -38,33 +38,23 @@
 const CONFIG = {
   vhPerYear: 100,
 
-  // --- Perspective / depth math (restored hyperbolic growth) ---
   focalOffset: 1.5,
-  scaleConstant: 1.0,   // scale = scaleConstant / distance
-  maxScale: 3.2,         // hard ceiling — once hit, a ring stops growing
+  scaleConstant: 1.0,
+  maxScale: 3.2,
 
-  // Ring spacing — bumped up from the original so rings sit further
-  // apart and the center stays clear of a big empty gap.
   baseRadiusPx: 300,
-  minRadiusPx: 90,
+  minRadiusPx: 24,        // was 90 — lets inner rings shrink below 90px so they stop piling up
 
   maxPhotoWidthPx: 110,
   minPhotoWidthPx: 14,
   ringFillFraction: 0.82,
 
-  // Soft aspect-ratio caps (width / height). Extreme panoramas or
-  // very tall portraits get gently cropped to fit; anything within
-  // this range keeps its exact true proportions, uncropped.
-  minAspect: 2 / 3,   // tallest allowed shape (portrait cap)
-  maxAspect: 3 / 2,   // widest allowed shape (landscape cap)
+  minAspect: 2 / 3,
+  maxAspect: 3 / 2,
 
-  // Distant/not-yet-arrived rings fade out over this distance range.
   farFadeStartsAt: 3.0,
-  farFadeEndsAt: 5.0,
+  farFadeEndsAt: 6.5,     // was 5.0 — extends visible range by one ring so a 5th inner layer appears
 
-  // How wide (in distance units) the post-plateau cleanup fade is.
-  // This only ever applies BELOW the real growth-plateau point, so it
-  // can never cut off an active "getting bigger" animation.
   passedFadeWindow: 0.18,
 
   perRingRotationOffsetDeg: 6,

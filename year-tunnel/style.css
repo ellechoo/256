@@ -93,3 +93,103 @@ html, body {
   width: 100%;
   z-index: 0;
 }
+
+/* =====================================================================
+   MINIMALIST YEAR TIMELINE (far-left rail)
+
+   Fixed to the viewport, sits above the tunnel (z-index 3 vs. the
+   viewport's 1). Only the dots are interactive — the container itself
+   is pointer-events:none so it never steals clicks or scroll.
+   ===================================================================== */
+#timeline {
+  position: fixed;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 62vh;
+  z-index: 3;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;  /* dots space evenly down the rail */
+  align-items: center;
+
+  pointer-events: none;
+}
+
+/* The 1px rail itself, fading out softly at both ends. Inset by 7px
+   top/bottom so it terminates exactly on the first/last dot centers
+   (dot hit-area is 14px tall). */
+#timeline::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  bottom: 7px;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #d8d8d8 12%,
+    #d8d8d8 88%,
+    transparent 100%
+  );
+}
+
+/* One dot. The button is a 14px invisible hit-area; the visible dot is
+   the ::after pseudo-element centered inside it. */
+.tl-dot {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tl-dot::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c9c9c9;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.tl-dot:hover::after {
+  background: #111;
+  transform: scale(1.4);
+}
+
+/* Current year — filled, so you can read your position at a glance. */
+.tl-dot.is-active::after {
+  background: #111;
+}
+
+/* Tiny year label, revealed on hover. */
+.tl-label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.tl-dot:hover .tl-label {
+  opacity: 0.75;
+}

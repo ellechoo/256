@@ -77,6 +77,7 @@ async function init() {
   yearsData = data.years;
 
   buildRings();
+  buildTimeline(); 
   sizeScrollSpacer();
 
   window.addEventListener('resize', sizeScrollSpacer);
@@ -169,6 +170,7 @@ function frameLoop(now) {
 
   currentDepth = window.scrollY / pixelsPerYear();
   updateTunnel();
+  updateTimelineActive();
 
   requestAnimationFrame(frameLoop);
 }
@@ -262,6 +264,60 @@ function updateTunnel() {
   if (closestVisibleYear !== null) {
     yearLabel.textContent = closestVisibleYear;
   }
+}
+
+/* =====================================================================
+   MINIMALIST YEAR TIMELINE — fixed rail on the far left
+
+   Purely additive: it only READS currentDepth to mark the active dot,
+   and writes to window.scrollTo on click. It never touches ring math,
+   distances, scales, opacity, or stacking — the tunnel is unchanged.
+   ===================================================================== */
+
+const timelineEl = document.getElementById('timeline');
+let timelineDots = [];
+let lastActiveRingIndex = -1;
+
+function buildTimeline() {
+  // yearsData[0] is the most recent year, so appending in order puts
+  // 2026 at the top of the rail and 1995 at the bottom — matching the
+  // scroll direction (depth 0 = 2026 in focus).
+  yearsData.forEach((yearEntry, ringIndex) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'tl-dot';
+    dot.dataset.index = String(ringIndex);
+    dot.setAttribute('aria-label', String(yearEntry.year));
+
+    const label = document.createElement('span');
+    label.className = 'tl-label';
+    label.textContent = yearEntry.year;
+    dot.appendChild(label);
+
+    // depth == ringIndex is exactly when this ring sits at the focal
+    // plane, so scrollY = ringIndex * pixelsPerYear() puts it in focus.
+    dot.addEventListener('click', () => {
+      window.scrollTo({
+        top: ringIndex * pixelsPerYear(),
+        behavior: 'smooth',
+      });
+    });
+
+    timelineEl.appendChild(dot);
+    timelineDots.push(dot);
+  });
+}
+
+function updateTimelineActive() {
+  const idx = clamp(Math.round(currentDepth), 0, yearsData.length - 1);
+  if (idx === lastActiveRingIndex) return;   // no DOM churn per frame
+
+  if (lastActiveRingIndex >= 0) {
+    timelineDots[lastActiveRingIndex].classList.remove('is-active');
+  }
+  timelineDots[idx].classList.add('is-active');
+
+  lastActiveRingIndex = idx;
 }
 
 init();

@@ -227,21 +227,28 @@ html, body {
 }
 
 /* The card itself */
-.modal-panel {
+/* Same-size shell around the panel. This is what scales on open and
+   what the nav arrows are positioned against — it does NOT clip, so
+   the arrows can stick out past the panel's edges. */
+.modal-wrap {
   position: relative;
   width: min(1100px, 88vw);
   height: min(680px, 78vh);
+  transform: scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+#photo-modal.is-open .modal-wrap {
+  transform: scale(1);
+}
+
+.modal-panel {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   background: #fff;
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28);
   overflow: hidden;
-
-  transform: scale(0.97);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-#photo-modal.is-open .modal-panel {
-  transform: scale(1);
 }
 
 .modal-close {
@@ -291,18 +298,17 @@ html, body {
   transition: color 0.35s ease;
 }
 
-/* Photo, centered over the bands, print-like */
+/* Photo floating over the hex bands. No white mat — the shadow does
+   the lifting work now. */
 .modal-photo {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 68%;
-  max-height: 74%;
+  max-height: 79%;        /* was 74% */
   object-fit: contain;
-  background: #fff;
-  padding: 8px;
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.32);
 }
 
 /* ---------------- RIGHT 1/3 ---------------- */
@@ -355,3 +361,43 @@ html, body {
   color: #333;
   word-break: break-word;
 }
+
+/* =====================================================================
+   MODAL CAROUSEL NAV — rounded tabs glued to the panel's left/right
+   edges. Attached (not floating), so the backdrop-click-to-close only
+   ever triggers on empty space around the wrap.
+   ===================================================================== */
+.modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 84px;
+  padding: 0;
+  border: 0;
+  background: #fff;
+  color: #111;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 4;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+  transition: background 0.15s ease;
+}
+.modal-nav:hover  { background: #f3f3f3; }
+.modal-nav:active { background: #e7e7e7; }
+
+/* Prev: outer (left) corners rounded, inner (right) corners flush
+   against the panel.  Exactly mirrored for next. */
+.modal-nav-prev {
+  left: -26px;
+  border-radius: 8px 0 0 8px;
+}
+.modal-nav-next {
+  right: -26px;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Hidden when the year only has one photo */
+.modal-nav.is-hidden { display: none; }

@@ -2,83 +2,89 @@
    TUNNEL THROUGH TIME — year-ring scroll visualization
    =====================================================================
 
-   THE CORE IDEA
-   --------------
    Every year is a "ring" of photos arranged in a circle, each photo
-   rotated so its bottom edge faces the ring's center (like numbers
-   around a clock, or petals on a flower).
+   rotated so its bottom edge faces the ring's center.
 
-   Ring 0 = the most recent year (e.g. 2026) = the tunnel entrance.
-   Ring 1 = one year back, etc, receding toward a vanishing point.
+   Ring 0 = the most recent year (e.g. 2026), ring 1 = one year back,
+   etc, receding toward a vanishing point.
 
    Scroll position maps to a continuous "depth" number. Every ring's
-   apparent size/opacity is a function of (ringIndex - depth) — its
-   distance from the viewer right now. Every ring reaches the SAME
-   peak size at the moment it's "in focus" (distance == focalOffset),
-   so ring N always ends up exactly where ring N-1 started, and the
-   very first ring at rest looks identical to how the next ring will
-   look when it takes over — nothing is uniquely oversized at start.
+   "distance" from the viewer is (ringIndex - depth + focalOffset).
+   Distance falls as you scroll toward a ring; scale grows the whole
+   time distance is falling (true 1/distance perspective — this is
+   the "hyperbolic" growth curve, restored here because it's the one
+   that felt right for scroll speed/rate).
 
-   On top of that positional animation, every ring also has a slow,
-   continuous spin (alternating direction ring to ring) that runs at
-   all times, independent of scroll.
+   OPACITY / FADE — the important fix in this version:
+   A ring should NEVER fade while it's still visibly growing. The
+   growth formula (scaleConstant / distance) keeps increasing scale
+   for as long as distance keeps falling — it doesn't "finish" at
+   some arbitrary reference point, only once it's clamped at
+   maxScale (the hard ceiling) does it actually stop changing size.
+   So the fade-out for a passed ring is tied to that REAL plateau
+   point (scaleConstant / maxScale), not to focalOffset. Below that
+   plateau distance, the ring is well and truly done growing — THAT's
+   when it's safe to fade it out quickly, to make room for the next
+   ring, without ever interrupting an active grow animation.
+
+   Distant (not-yet-arrived) rings still fade out normally the
+   further out they are — that's unrelated and unaffected.
+
+   STACKING: each ring gets a FIXED z-index based on its year index,
+   set once at build time, so closer rings always render in front —
+   this doesn't depend on scroll position.
    ===================================================================== */
 
 const CONFIG = {
-  // Scroll distance (in viewport heights) to walk through one year.
   vhPerYear: 100,
 
-  // --- Perspective math ---
-  // distance = (ringIndex - depth + focalOffset)
-  // Every ring hits its own peak size when distance == focalOffset.
-  // Raising this number makes every ring's peak size smaller/less
-  // zoomed (this is what keeps the resting/entrance view from feeling
-  // too cropped-in).
+  // --- Perspective / depth math (restored hyperbolic growth) ---
   focalOffset: 1.5,
-  scaleConstant: 1.0,
-  maxScale: 3.2,
+  scaleConstant: 1.0,   // scale = scaleConstant / distance
+  maxScale: 3.2,         // hard ceiling — once hit, a ring stops growing
 
-  baseRadiusPx: 230,
-  minRadiusPx: 40,      // keeps the very center of the screen always clear
+  // Ring spacing — bumped up from the original so rings sit further
+  // apart and the center stays clear of a big empty gap.
+  baseRadiusPx: 300,
+  minRadiusPx: 90,
 
-  // A photo's WIDTH (tangential/circumferential dimension) is capped
-  // at this, but shrinks automatically when a ring has more photos —
-  // see baselinePhotoWidth(). Height is derived per-photo from its own
-  // true aspect ratio, never cropped.
-  maxPhotoWidthPx: 100,
+  maxPhotoWidthPx: 110,
   minPhotoWidthPx: 14,
-  ringFillFraction: 0.82, // <1 leaves a gap between adjacent photos
+  ringFillFraction: 0.82,
 
-  nearFadeFullyOpaqueAt: 1.5,
-  nearFadeInvisibleAt: 0.0,
+  // Soft aspect-ratio caps (width / height). Extreme panoramas or
+  // very tall portraits get gently cropped to fit; anything within
+  // this range keeps its exact true proportions, uncropped.
+  minAspect: 2 / 3,   // tallest allowed shape (portrait cap)
+  maxAspect: 3 / 2,   // widest allowed shape (landscape cap)
+
+  // Distant/not-yet-arrived rings fade out over this distance range.
   farFadeStartsAt: 3.0,
   farFadeEndsAt: 5.0,
 
-  perRingRotationOffsetDeg: 6,
+  // How wide (in distance units) the post-plateau cleanup fade is.
+  // This only ever applies BELOW the real growth-plateau point, so it
+  // can never cut off an active "getting bigger" animation.
+  passedFadeWindow: 0.18,
 
-  // Continuous idle spin, always running. Alternates direction by ring
-  // index (even = clockwise, odd = counterclockwise).
+  perRingRotationOffsetDeg: 6,
   spinDegPerSecond: 3,
 };
 
 let yearsData = [];
-let ringEls = [];        // { container, year, spinDir, photos: [{el, img, angleDeg, aspect, aspectKnown}] }
+let ringEls = [];
 let currentDepth = 0;
 let lastFrameTime = null;
-let spinAccumDeg = [];   // per-ring accumulated spin offset (degrees), grows every frame
+let spinAccumDeg = [];
 
 const stage = document.getElementById('tunnel-stage');
 const yearLabel = document.getElementById('year-label-text');
 const spacer = document.getElementById('scroll-spacer');
 
-// -----------------------------------------------------------------
-// Load data, build DOM
-// -----------------------------------------------------------------
-
 async function init() {
   const res = await fetch('data/dataset.json');
   const data = await res.json();
-  yearsData = data.years; // newest first
+  yearsData = data.years;
 
   buildRings();
   sizeScrollSpacer();
@@ -89,11 +95,22 @@ async function init() {
   requestAnimationFrame(frameLoop);
 }
 
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
 function buildRings() {
+  const totalRings = yearsData.length;
+
   yearsData.forEach((yearEntry, ringIndex) => {
     const ring = document.createElement('div');
     ring.className = 'ring';
     ring.dataset.year = yearEntry.year;
+
+    // Fixed stacking order: closer rings (lower index) always render
+    // in front, regardless of scroll position — this was the bug
+    // behind rings overlapping in the wrong visual order.
+    ring.style.zIndex = String(totalRings - ringIndex);
 
     const n = yearEntry.photos.length;
 
@@ -112,13 +129,14 @@ function buildRings() {
         el: wrap,
         img,
         angleDeg,
-        aspect: 1,        // width / height — placeholder until the real
-        aspectKnown: false, // image loads and we learn its true ratio
+        aspect: 1,
+        aspectKnown: false,
       };
 
       img.addEventListener('load', () => {
         if (img.naturalWidth && img.naturalHeight) {
-          photoState.aspect = img.naturalWidth / img.naturalHeight;
+          const trueAspect = img.naturalWidth / img.naturalHeight;
+          photoState.aspect = clamp(trueAspect, CONFIG.minAspect, CONFIG.maxAspect);
           photoState.aspectKnown = true;
         }
       });
@@ -136,15 +154,11 @@ function buildRings() {
       container: ring,
       photos: photoEls,
       year: yearEntry.year,
-      spinDir: (ringIndex % 2 === 0) ? 1 : -1, // even index = clockwise
+      spinDir: (ringIndex % 2 === 0) ? 1 : -1,
     });
     spinAccumDeg.push(0);
   });
 }
-
-// -----------------------------------------------------------------
-// Scroll -> depth
-// -----------------------------------------------------------------
 
 function pixelsPerYear() {
   return window.innerHeight * (CONFIG.vhPerYear / 100);
@@ -155,13 +169,8 @@ function sizeScrollSpacer() {
   spacer.style.height = (totalYears * pixelsPerYear()) + 'px';
 }
 
-// -----------------------------------------------------------------
-// Continuous animation loop — runs every frame regardless of scroll,
-// so the idle spin never stops.
-// -----------------------------------------------------------------
-
 function frameLoop(now) {
-  const deltaSec = Math.min((now - lastFrameTime) / 1000, 0.1); // clamp for tab-switch gaps
+  const deltaSec = Math.min((now - lastFrameTime) / 1000, 0.1);
   lastFrameTime = now;
 
   ringEls.forEach((ring, i) => {
@@ -174,39 +183,43 @@ function frameLoop(now) {
   requestAnimationFrame(frameLoop);
 }
 
-// -----------------------------------------------------------------
-// Core per-frame update
-// -----------------------------------------------------------------
-
-function clamp(v, lo, hi) {
-  return Math.max(lo, Math.min(hi, v));
+// The distance at which scale = scaleConstant/distance FIRST reaches
+// maxScale — i.e. the real point where a ring stops growing. Below
+// this, size no longer changes, so it's safe to fade out.
+function plateauDistance() {
+  return CONFIG.scaleConstant / CONFIG.maxScale;
 }
 
 function opacityForDistance(dist) {
-  if (dist <= CONFIG.nearFadeInvisibleAt) return 0;
-  if (dist < CONFIG.nearFadeFullyOpaqueAt) {
-    return clamp(
-      (dist - CONFIG.nearFadeInvisibleAt) /
-      (CONFIG.nearFadeFullyOpaqueAt - CONFIG.nearFadeInvisibleAt),
-      0, 1
-    );
+  const plateau = plateauDistance();
+
+  if (dist > plateau) {
+    // Scale is still actively increasing here — NEVER fade in this
+    // zone, no matter how close/large the ring has gotten. Only the
+    // far side (distant, not-yet-arrived rings) can reduce opacity.
+    if (dist <= CONFIG.farFadeStartsAt) return 1;
+    if (dist < CONFIG.farFadeEndsAt) {
+      return clamp(
+        1 - (dist - CONFIG.farFadeStartsAt) / (CONFIG.farFadeEndsAt - CONFIG.farFadeStartsAt),
+        0, 1
+      );
+    }
+    return 0;
   }
-  if (dist <= CONFIG.farFadeStartsAt) return 1;
-  if (dist < CONFIG.farFadeEndsAt) {
-    return clamp(
-      1 - (dist - CONFIG.farFadeStartsAt) /
-          (CONFIG.farFadeEndsAt - CONFIG.farFadeStartsAt),
-      0, 1
-    );
+
+  // Growth has genuinely plateaued (maxed out) — quick cleanup fade.
+  const floor = plateau - CONFIG.passedFadeWindow;
+  if (dist > floor) {
+    return clamp((dist - floor) / (plateau - floor), 0, 1);
   }
   return 0;
 }
 
-// Width (tangential dimension) for a photo in a ring of n photos, at
-// the "reference" scale of 1.0 — computed from baseRadiusPx so caps
-// apply consistently, then scaled linearly at the call site alongside
-// everything else in the ring (so size grows/shrinks proportionally
-// with depth, not quadratically).
+function scaleForDistance(distance) {
+  const raw = CONFIG.scaleConstant / Math.max(distance, 0.001);
+  return clamp(raw, 0.001, CONFIG.maxScale);
+}
+
 function baselinePhotoWidth(n) {
   const circumference = 2 * Math.PI * CONFIG.baseRadiusPx;
   const share = (circumference / n) * CONFIG.ringFillFraction;
@@ -227,9 +240,7 @@ function updateTunnel() {
       return;
     }
 
-    const rawScale = CONFIG.scaleConstant / Math.max(distance, 0.001);
-    const scale = clamp(rawScale, 0.001, CONFIG.maxScale);
-
+    const scale = scaleForDistance(distance);
     const radius = Math.max(CONFIG.baseRadiusPx * scale, CONFIG.minRadiusPx);
     const n = ring.photos.length;
     const photoWidth = baselinePhotoWidth(n) * scale;

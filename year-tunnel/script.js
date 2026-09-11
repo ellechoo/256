@@ -77,7 +77,8 @@ async function init() {
   yearsData = data.years;
 
   buildRings();
-  buildTimeline(); 
+  buildTimeline();
+  setupModalListeners();  
   sizeScrollSpacer();
 
   window.addEventListener('resize', sizeScrollSpacer);
@@ -135,6 +136,13 @@ function buildRings() {
       img.src = 'photos/' + encodeURIComponent(photo.file);
 
       wrap.appendChild(img);
+
+      wrap.style.cursor = 'pointer';
+      wrap.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPhotoModal(photoState, photo, yearEntry);
+      });
+
       ring.appendChild(wrap);
 
       return photoState;
@@ -262,8 +270,9 @@ function updateTunnel() {
   });
 
   if (closestVisibleYear !== null) {
-    yearLabel.textContent = closestVisibleYear;
+    yearLabel.textContent = '09.03.' + closestVisibleYear;
   }
+
 }
 
 /* =====================================================================
@@ -318,6 +327,121 @@ function updateTimelineActive() {
   timelineDots[idx].classList.add('is-active');
 
   lastActiveRingIndex = idx;
+}
+
+/* =====================================================================
+   PHOTO DETAIL MODAL
+   Uses the pre-computed palette straight from dataset.json — no canvas
+   extraction, no async, no CORS concerns. Reads only; never touches
+   tunnel math, ring scaling, ring opacity, spin, or stacking.
+   ===================================================================== */
+
+const modalEl       = document.getElementById('photo-modal');
+const modalBackdrop = modalEl.querySelector('.modal-backdrop');
+const modalClose    = modalEl.querySelector('.modal-close');
+const modalPhoto    = modalEl.querySelector('.modal-photo');
+const modalTitle    = modalEl.querySelector('.meta-title');
+const modalMetaList = modalEl.querySelector('.meta-list');
+const hexBands      = [
+  modalEl.querySelector('.hex-band-1'),
+  modalEl.querySelector('.hex-band-2'),
+  modalEl.querySelector('.hex-band-3'),
+];
+
+let isModalOpen = false;
+let lastFocusedEl = null;
+
+function openPhotoModal(photoState, photo, yearEntry) {
+  if (isModalOpen) return;
+  isModalOpen = true;
+
+  // Photo
+  modalPhoto.src = photoState.img.src;
+  modalPhoto.alt = photoState.img.alt;
+
+  // Title — no title field in the data yet, so fall back to the
+  // filename minus extension. Reads like a caption for most of these.
+  modalTitle.textContent =
+    photo.title ||
+    (photo.file || '').replace(/\.[^.]+$/, '') ||
+    String(yearEntry.year);
+
+  // Meta rows — only the ones with data will render.
+  const fields = {
+    photographer: photo.photographer,
+    datetime:     photo.datetime || photo.date || photo.datetimeOriginal,
+    device:       photo.device,
+    location:     photo.location || photo.gps,
+  };
+  modalMetaList.querySelectorAll('.meta-row').forEach(row => {
+    const dd = row.querySelector('dd');
+    const val = fields[dd.dataset.field];
+    if (val) {
+      dd.textContent = val;
+      row.style.display = '';
+    } else {
+      dd.textContent = '';
+      row.style.display = 'none';
+    }
+  });
+
+  // Palette — taken verbatim from dataset.json. `palette` is already
+  // sorted most-dominant-first, so band 1 = biggest, band 3 = smallest.
+  const pal = Array.isArray(photo.palette) ? photo.palette : [];
+  const colors = [0, 1, 2].map(i => {
+    const entry = pal[i];
+    if (!entry) return null;
+    return {
+      hex: entry.hex || '#eeeeee',
+      pct: typeof entry.pct === 'number' ? entry.pct : null,
+    };
+  });
+  colors.forEach((c, i) => {
+    const band  = hexBands[i];
+    const label = band.querySelector('.hex-label');
+    const hex   = c ? c.hex : '#eeeeee';
+    band.style.background = hex;
+    label.textContent = hex.toUpperCase();
+    label.style.color = textColorFor(hex);
+  });
+
+  // Lock page scroll (rings keep spinning — frameLoop is untouched)
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+
+  lastFocusedEl = document.activeElement;
+  modalEl.classList.add('is-open');
+  modalEl.setAttribute('aria-hidden', 'false');
+  modalClose.focus();
+}
+
+function closePhotoModal() {
+  if (!isModalOpen) return;
+  isModalOpen = false;
+
+  modalEl.classList.remove('is-open');
+  modalEl.setAttribute('aria-hidden', 'true');
+
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
+
+  if (lastFocusedEl && lastFocusedEl.focus) lastFocusedEl.focus();
+}
+
+function textColorFor(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.9)';
+}
+
+function setupModalListeners() {
+  modalClose.addEventListener('click', closePhotoModal);
+  modalBackdrop.addEventListener('click', closePhotoModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && isModalOpen) closePhotoModal();
+  });
 }
 
 init();

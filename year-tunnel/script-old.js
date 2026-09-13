@@ -65,20 +65,6 @@ const CONFIG = {
   photoPressedScale: 0.94,   // dip on click for tactile feedback
   photoScaleLerp: 14,        // higher = snappier; ~10–20 feels natural
 
-
-    // Year N is "current" for depth in [N + yearStartOffset, N + 1 + yearStartOffset).
-  // Positive = the label LAGS: it switches to the next year only after
-  // that next ring has visibly grown and the old one is already fading.
-  // Negative = the label LEADS: switches while the old ring is still big.
-  //
-  //   0.0  = switch exactly when the next year hits the focal plane.
-  //   0.3  = current setting — old ring is mid-fade when the switch happens.
-  //   0.4  = old ring fully faded at the switch (cleanest handoff).
-  //   0.5+ = next ring is well past focal before the label catches up.
-  yearStartOffset: 0.3,
-
-  initialDepthOffset: 0.5,
-
 };
 
 let yearsData = [];
@@ -100,17 +86,6 @@ async function init() {
   buildTimeline();
   setupModalListeners();  
   sizeScrollSpacer();
-
-  // Land in the middle of the (very large but finite) buffer, at a
-  // scroll position that's mathematically identical to depth=0 (a
-  // whole number of full cycles in) — so the very first thing shown
-  // is exactly the normal starting view, with huge scroll room in
-  // BOTH directions before ever reaching a real edge. See the
-  // "SEAMLESS LOOPING" comment block below for how this works.
-  window.scrollTo(
-    0,
-    (BUFFER_CYCLES * yearsData.length + CONFIG.initialDepthOffset) * pixelsPerYear()
-  );
 
   window.addEventListener('resize', sizeScrollSpacer);
 
@@ -232,31 +207,9 @@ function pixelsPerYear() {
   return window.innerHeight * (CONFIG.vhPerYear / 100);
 }
 
-/* =====================================================================
-   SEAMLESS LOOPING
-
-   Instead of a hard scroll boundary + a jump-cut, each ring's
-   "distance" (see updateTunnel) wraps around every full cycle through
-   all the years — so ring 0 (2026) doesn't just appear once near the
-   start of the page, it periodically comes back into focus every
-   `yearsData.length` years' worth of scrolling, seamlessly, with no
-   special-cased jump.
-
-   To make that feel genuinely endless rather than just "loops after
-   one lap," the actual scrollable page is sized to hold many, many
-   laps (BUFFER_CYCLES in each direction), and the initial scroll
-   position starts BUFFER_CYCLES laps in — which, thanks to the
-   periodic wrap, renders EXACTLY like depth=0 (2026 in focus). That
-   gives huge scroll room in both directions before ever reaching a
-   real edge; a real user would have to scroll continuously for an
-   unreasonable amount of time to exhaust it.
-   ===================================================================== */
-const BUFFER_CYCLES = 40; // laps of headroom in EACH direction
-
 function sizeScrollSpacer() {
-  const totalYears = yearsData.length;
-  const totalCycles = BUFFER_CYCLES * 2;
-  spacer.style.height = (totalCycles * totalYears * pixelsPerYear()) + 'px';
+  const totalYears = yearsData.length + 1;
+  spacer.style.height = (totalYears * pixelsPerYear()) + 'px';
 }
 
 function frameLoop(now) {
@@ -319,12 +272,11 @@ function baselinePhotoWidth(n) {
 }
 
 function updateTunnel(deltaSec) {
-  const totalYears = yearsData.length;
+  let closestVisibleYear = null;
+  let closestDist = Infinity;
 
   ringEls.forEach((ring, ringIndex) => {
-    const rawDistance = (ringIndex - currentDepth) + CONFIG.focalOffset;
-    const distance = rawDistance - totalYears * Math.round(rawDistance / totalYears);
-
+    const distance = (ringIndex - currentDepth) + CONFIG.focalOffset;
     const opacity = opacityForDistance(distance);
 
     if (opacity <= 0) {
@@ -353,6 +305,7 @@ function updateTunnel(deltaSec) {
       el.style.marginLeft = (-w / 2) + 'px';
       el.style.marginTop = (-h / 2) + 'px';
 
+      // Frame-rate-independent lerp toward targetScale
       const k = Math.min(1, deltaSec * CONFIG.photoScaleLerp);
       photo.hoverScale += (photo.targetScale - photo.hoverScale) * k;
 
@@ -360,26 +313,19 @@ function updateTunnel(deltaSec) {
         'rotate(' + (photo.angleDeg + spin) + 'deg)' +
         ' translateY(' + (-radius) + 'px)' +
         ' scale(' + photo.hoverScale + ')';
+
     });
+
+    if (Math.abs(distance - CONFIG.focalOffset) < closestDist) {
+      closestDist = Math.abs(distance - CONFIG.focalOffset);
+      closestVisibleYear = ring.year;
+    }
   });
 
-  if (!isModalOpen) {
-    // Year N is current for depth in [N + yearStartOffset, N + 1 + yearStartOffset).
-    //
-    // Normally the modulo wraps negative indices back to the last year
-    // (1995) — which is correct for the seamless loop, but jarring when
-    // the user scrolls UP from the opening position: 1995 briefly becomes
-    // the label while 2026 is still the visually dominant ring. So we
-    // clamp below zero to year 0 instead of wrapping. Forward wrapping
-    // (past the end of a lap) still works normally.
-    const shifted = currentDepth - CONFIG.yearStartOffset;
-    const rawIndex = Math.floor(shifted);
-    const activeIndex = rawIndex < 0
-      ? 0
-      : ((rawIndex % totalYears) + totalYears) % totalYears;
-    yearLabel.textContent = '09.03.' + yearsData[activeIndex].year;
+  if (!isModalOpen && closestVisibleYear !== null) {
+    yearLabel.textContent = '09.03.' + closestVisibleYear;
   }
-  
+
 }
 
 /* =====================================================================
@@ -411,19 +357,10 @@ function buildTimeline() {
     dot.appendChild(label);
 
     // depth == ringIndex is exactly when this ring sits at the focal
-    // plane. We jump to the SAME lap the user is currently on (not lap
-    // zero), so clicking a dot never eats into the scroll buffer that
-    // makes the infinite loop feel seamless in both directions.
+    // plane, so scrollY = ringIndex * pixelsPerYear() puts it in focus.
     dot.addEventListener('click', () => {
-      const totalYears = yearsData.length;
-      // Land at the START of this year's window (the moment the label
-      // switches to it), in whichever lap the user is currently on.
-      const currentLap = Math.floor((currentDepth - CONFIG.yearStartOffset) / totalYears);
-
-      const targetDepth = currentLap * totalYears + ringIndex + CONFIG.initialDepthOffset;
-      
       window.scrollTo({
-        top: targetDepth * pixelsPerYear(),
+        top: ringIndex * pixelsPerYear(),
         behavior: 'smooth',
       });
     });
@@ -434,15 +371,7 @@ function buildTimeline() {
 }
 
 function updateTimelineActive() {
-  const totalYears = yearsData.length;
-  // Must match the label's calculation in updateTunnel exactly, or the
-  // dot and the header text can disagree during the transition zone.
-  const shifted = currentDepth - CONFIG.yearStartOffset;
-  const rawIndex = Math.floor(shifted);
-  const idx = rawIndex < 0
-    ? 0
-    : ((rawIndex % totalYears) + totalYears) % totalYears;
-
+  const idx = clamp(Math.round(currentDepth), 0, yearsData.length - 1);
   if (idx === lastActiveRingIndex) return;   // no DOM churn per frame
 
   if (lastActiveRingIndex >= 0) {

@@ -75,7 +75,7 @@ const CONFIG = {
   //   0.3  = current setting — old ring is mid-fade when the switch happens.
   //   0.4  = old ring fully faded at the switch (cleanest handoff).
   //   0.5+ = next ring is well past focal before the label catches up.
-  yearStartOffset: 0.3,
+  yearStartOffset: 0.2,
 
   initialDepthOffset: 0.5,
 
@@ -467,10 +467,11 @@ const modalTitle    = modalEl.querySelector('.meta-title');
 const modalMetaList = modalEl.querySelector('.meta-list');
 const modalNavPrev  = modalEl.querySelector('.modal-nav-prev');
 const modalNavNext  = modalEl.querySelector('.modal-nav-next');
+
 const hexBands      = [
-  modalEl.querySelector('.hex-band-1'),
-  modalEl.querySelector('.hex-band-2'),
-  modalEl.querySelector('.hex-band-3'),
+  modalEl.querySelector('.swatch-1'),
+  modalEl.querySelector('.swatch-2'),
+  modalEl.querySelector('.swatch-3'),
 ];
 
 let isModalOpen      = false;
@@ -551,13 +552,12 @@ function fillModal() {
     }
   });
 
-  // Palette straight from dataset.json — index 0 = largest band.
   const pal = Array.isArray(photo.palette) ? photo.palette : [];
   for (let i = 0; i < 3; i++) {
-    const band  = hexBands[i];
-    const label = band.querySelector('.hex-label');
-    const hex   = (pal[i] && pal[i].hex) ? pal[i].hex : '#eeeeee';
-    band.style.background = hex;
+    const swatch = hexBands[i];
+    const label  = swatch.querySelector('.swatch-label');
+    const hex    = (pal[i] && pal[i].hex) ? pal[i].hex : '#eeeeee';
+    swatch.style.background = hex;
     label.textContent = hex.toUpperCase();
     label.style.color = textColorFor(hex);
   }

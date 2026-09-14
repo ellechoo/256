@@ -8,8 +8,6 @@
 </head>
 <body>
 
-<button id="mode-toggle" type="button" aria-pressed="false">Flat</button>
-
  <!-- Fixed viewport container — this is what the user actually sees. -->
   <div id="tunnel-viewport">
     <div id="tunnel-stage"></div>
@@ -31,10 +29,7 @@
        list stays in sync with data/dataset.json. -->
   <nav id="timeline" aria-label="Year timeline"></nav>
 
-  <!-- Flat mode viewport. Hidden unless <body> has class "mode-flat". -->
-  <div id="flat-viewport" aria-hidden="true">
-    <div id="flat-stage"></div>
-  </div>
+
 
   <!-- Photo detail modal. Hidden by default (see .is-open in CSS). -->
   <div id="photo-modal" role="dialog" aria-modal="true" aria-hidden="true">
@@ -73,7 +68,6 @@
   </div>
 
   <script src="script.js"></script>
-  <script src="flat.js"></script>
 
 </body>
 </html>

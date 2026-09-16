@@ -557,3 +557,33 @@ body.mode-flat #flat-viewport {
 .flat-photo {
   transition: opacity 0.22s ease;
 }
+
+/* =====================================================================
+   FLAT MODE — GPS toggle
+   ===================================================================== */
+#flat-gps-toggle {
+  position: absolute;
+  top: 24px;
+  left: 26px;
+  z-index: 10;
+  padding: 7px 14px;
+  border: 1px solid #dcdcdc;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #444;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+#flat-gps-toggle:hover      { background: #f4f4f4; }
+#flat-gps-toggle.is-active  {
+  background: #111;
+  color: #ffffff;
+  border-color: #111;
+}

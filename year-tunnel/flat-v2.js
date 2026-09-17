@@ -30,7 +30,7 @@
     ['film', 'Film'], ['compact', 'Compact'], ['dslr', 'DSLR'],
     ['mirrorless', 'Mirrorless'], ['phone', 'Phone'], ['pro', 'Pro'], ['other', 'Other'],
   ];
-  let years = [], isFlat = false, savedScrollY = 0, baseScale = 1;
+  let years = [], isFlat = false, baseScale = 1;
   let contentBounds = { x: 0, y: 0 };
   let highlightedRing = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
   let deviceGroups = []; 
@@ -352,6 +352,7 @@
       spin: 0,
     });
     parent.appendChild(ring);
+    return ring;
   }
 
   function packDeviceCircles(groups) {
@@ -413,12 +414,14 @@
       deviceLabel.textContent = label;
       deviceLabel.style.transform = 'translate(' + x + 'px,' + y + 'px)';
       stage.appendChild(deviceLabel);
-            
+
+      const groupRingEls = [];
       group.chronological.forEach(([year, photos], yearIndex) => {
-        addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, ringOffset(group.id, year), group.id);
+        const ringEl = addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, ringOffset(group.id, year), group.id);
+        groupRingEls.push(ringEl);
       });
 
-      deviceGroups.push({ id: group.id, label: group.label, order: group.order, x, y, radius: group.radius });
+      deviceGroups.push({ id: group.id, label: group.label, order: group.order, x, y, radius: group.radius, ringEls: groupRingEls, labelEl: deviceLabel });
       maxX = Math.max(maxX, Math.abs(x) + radius);
       maxY = Math.max(maxY, Math.abs(y) + radius + 130);
     });
@@ -541,9 +544,23 @@
     applyView();
   }
 
-  function enterFlat() {
-    if (isFlat) return;
-    savedScrollY = window.scrollY;
+  // Mode switching itself (the toggle click) is owned by transition.js,
+  // which orchestrates the tunnel<->flat animation and calls the
+  // entrance/exit primitives below through window.Flat. Flat mode never
+  // snaps in/out on its own anymore.
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeInCubic(t) { return t * t * t; }
+  // A gentle overshoot-then-settle curve, used so each ring "pops" open
+  // a touch past full size before relaxing back — it reads as growth
+  // with a little life in it rather than a flat linear scale-up.
+  function easeOutBack(t) {
+    const c = 1.4;
+    const p = t - 1;
+    return 1 + c * p * p * p + c * p * p;
+  }
+
+  function showFlatChrome() {
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     document.body.classList.add('mode-flat');
@@ -551,28 +568,251 @@
     modeToggle.textContent = 'Tunnel';
     modeToggle.setAttribute('aria-pressed', 'true');
     isFlat = true;
-    buildView();
-    resetView();
   }
-  function exitFlat() {
-    if (!isFlat) return;
+
+  // Lays out the flat DOM and camera at rest on `targetId` (or the home
+  // group if targetId doesn't exist), but does NOT reveal anything yet —
+  // every ring is left fully hidden so playEntrance() can animate it in.
+  // Returns the id of the group the entrance should grow from the
+  // center of the screen (the group the camera is centered on).
+  function prepareEntrance(targetId) {
+    showFlatChrome();
+    viewport.style.pointerEvents = 'none';
+    buildView();
+    const group = deviceGroups.find(g => g.id === targetId) || deviceGroups[homeDeviceIndex] || null;
+    if (group) {
+      view.scale = scaleForGroup(group);
+      view.tx = -group.x * baseScale * view.scale;
+      view.ty = -group.y * baseScale * view.scale;
+    } else {
+      view.scale = minimumScale();
+      view.tx = 0;
+      view.ty = 0;
+    }
+    clampView();
+    applyView();
+    return group ? group.id : null;
+  }
+
+  // Same idea, but at rest in the fully-zoomed-out "All" view. Returns
+  // the id of whichever group sits closest to the world origin, since
+  // that's the one the transition should grow from the screen's center.
+  function prepareAllViewEntrance() {
+    showFlatChrome();
+    viewport.style.pointerEvents = 'none';
+    buildView();
+    view.scale = minimumScale();
+    view.tx = 0;
+    view.ty = 0;
+    clampView();
+    applyView();
+    return getClosestGroupToView();
+  }
+
+  function getClosestGroupToView() {
+    if (!deviceGroups.length) return null;
+    const localX = -view.tx / (baseScale * view.scale);
+    const localY = -view.ty / (baseScale * view.scale);
+    let closest = deviceGroups[0], best = Infinity;
+    deviceGroups.forEach(group => {
+      const distance = Math.hypot(localX - group.x, localY - group.y);
+      if (distance < best) { best = distance; closest = group; }
+    });
+    return closest.id;
+  }
+
+  // Grows anchorId's rings out from the screen's center (the camera is
+  // already centered on it) while every other group's rings fly in from
+  // just off-screen to their packed positions. Returns a promise that
+  // resolves once everything has settled.
+  function playEntrance(anchorId, duration) {
+    return new Promise(resolve => {
+      const anchor = deviceGroups.find(g => g.id === anchorId) || null;
+      const others = deviceGroups.filter(g => g.id !== anchorId);
+      if (anchor) setRevealedGroup(anchor.id);
+
+      const span = (Math.max(window.innerWidth, window.innerHeight) / (baseScale * view.scale)) * 0.85;
+      const starts = others.map(group => {
+        let dx = anchor ? group.x - anchor.x : group.x;
+        let dy = anchor ? group.y - anchor.y : group.y;
+        const len = Math.hypot(dx, dy) || 1;
+        dx /= len; dy /= len;
+        return { group, sx: group.x + dx * span, sy: group.y + dy * span };
+      });
+
+      // Initial (pre-first-frame) state: anchor collapsed to a point at
+      // its own center, everyone else parked off-screen — set
+      // synchronously so there's no one-frame flash of the finished
+      // layout before the animation takes over.
+      if (anchor) {
+        anchor.ringEls.forEach(ring => {
+          ring.style.transform = 'translate(' + anchor.x + 'px,' + anchor.y + 'px) scale(0)';
+          ring.style.opacity = '0';
+        });
+        anchor.labelEl.style.opacity = '0';
+      }
+      starts.forEach(({ group, sx, sy }) => {
+        group.ringEls.forEach(ring => {
+          ring.style.transform = 'translate(' + sx + 'px,' + sy + 'px)';
+          ring.style.opacity = '0';
+        });
+        group.labelEl.style.opacity = '0';
+      });
+
+      const anchorStagger = anchor ? Math.min(22, duration / (anchor.ringEls.length + 1) / 2) : 0;
+      const start = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - start) / duration);
+        if (anchor) {
+          const span2 = Math.max(1, duration - anchorStagger * anchor.ringEls.length);
+          anchor.ringEls.forEach((ring, i) => {
+            const localT = clamp((t * duration - i * anchorStagger) / span2, 0, 1);
+            const p = easeOutBack(localT);
+            ring.style.transform = 'translate(' + anchor.x + 'px,' + anchor.y + 'px) scale(' + Math.max(0, p) + ')';
+            ring.style.opacity = String(clamp(localT * 1.6, 0, 1));
+          });
+          const labelT = easeOutCubic(t);
+          anchor.labelEl.style.opacity = String(labelT);
+        }
+        starts.forEach(({ group, sx, sy }) => {
+          const p = easeOutCubic(t);
+          const x = sx + (group.x - sx) * p;
+          const y = sy + (group.y - sy) * p;
+          group.ringEls.forEach(ring => {
+            ring.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+            ring.style.opacity = String(p);
+          });
+          group.labelEl.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+          group.labelEl.style.opacity = String(p);
+        });
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          if (anchor) {
+            anchor.ringEls.forEach(ring => {
+              ring.style.transform = 'translate(' + anchor.x + 'px,' + anchor.y + 'px)';
+              ring.style.opacity = '';
+            });
+            anchor.labelEl.style.opacity = '';
+          }
+          starts.forEach(({ group }) => {
+            group.ringEls.forEach(ring => {
+              ring.style.transform = 'translate(' + group.x + 'px,' + group.y + 'px)';
+              ring.style.opacity = '';
+            });
+            group.labelEl.style.opacity = '';
+          });
+          viewport.style.pointerEvents = '';
+          resolve();
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // Reverse of playEntrance: whichever group is currently settled on
+  // (or, in the all-zoomed-out view, whichever is closest to center)
+  // collapses back into the screen's center while every other group
+  // flies back out off-screen.
+  function playExit(duration) {
+    return new Promise(resolve => {
+      const settled = getSettledTarget();
+      const anchorId = settled.type === 'group' ? settled.id : getClosestGroupToView();
+      const anchor = deviceGroups.find(g => g.id === anchorId) || null;
+      const others = deviceGroups.filter(g => g.id !== anchorId);
+
+      const span = (Math.max(window.innerWidth, window.innerHeight) / (baseScale * view.scale)) * 0.85;
+      const ends = others.map(group => {
+        let dx = anchor ? group.x - anchor.x : group.x;
+        let dy = anchor ? group.y - anchor.y : group.y;
+        const len = Math.hypot(dx, dy) || 1;
+        dx /= len; dy /= len;
+        return { group, ex: group.x + dx * span, ey: group.y + dy * span };
+      });
+
+      viewport.style.pointerEvents = 'none';
+      const start = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const p = easeInCubic(t);
+        if (anchor) {
+          anchor.ringEls.forEach(ring => {
+            ring.style.transform = 'translate(' + anchor.x + 'px,' + anchor.y + 'px) scale(' + Math.max(0, 1 - p) + ')';
+            ring.style.opacity = String(1 - p);
+          });
+          anchor.labelEl.style.opacity = String(1 - p);
+        }
+        ends.forEach(({ group, ex, ey }) => {
+          const x = group.x + (ex - group.x) * p;
+          const y = group.y + (ey - group.y) * p;
+          group.ringEls.forEach(ring => {
+            ring.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+            ring.style.opacity = String(1 - p);
+          });
+          group.labelEl.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+          group.labelEl.style.opacity = String(1 - p);
+        });
+        if (t < 1) requestAnimationFrame(step);
+        else resolve();
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function isAllView() {
+    return !deviceGroups.length || view.scale <= minimumScale() + CONFIG.deviceAllZone;
+  }
+
+  function getSettledTarget() {
+    if (isAllView()) return { type: 'all' };
+    const id = (activeDeviceIndex >= 0 && activeDeviceIndex < deviceGroups.length) ? deviceGroups[activeDeviceIndex].id : null;
+    return id ? { type: 'group', id } : { type: 'all' };
+  }
+
+  function finalizeExit() {
     pointers.clear();
     gesture = null;
     lastPointer = null;
     preview.classList.remove('is-visible');
     clearRing();
     viewport.classList.remove('is-dragging');
+    viewport.style.pointerEvents = '';
     document.body.classList.remove('mode-flat');
     viewport.setAttribute('aria-hidden', 'true');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    window.scrollTo(0, savedScrollY);
     modeToggle.textContent = 'Flat';
     modeToggle.setAttribute('aria-pressed', 'false');
     isFlat = false;
   }
 
-  modeToggle.addEventListener('click', () => isFlat ? exitFlat() : enterFlat());
+  // Bridge used by transition.js to orchestrate the tunnel<->flat
+  // animation. Ordinary in-flat panning/zooming/clicking still goes
+  // through the internal functions above directly.
+  window.Flat = {
+    isReady: () => years.length > 0,
+    isActive: () => isFlat,
+    getDeviceGroupIds: () => deviceGroups.map(g => g.id),
+    getHomeGroupId: () => (deviceGroups[homeDeviceIndex] || {}).id || null,
+    isAllView,
+    getClosestGroupToView,
+    getSettledTarget,
+    flyToGroupId: (id, duration) => {
+      const group = deviceGroups.find(g => g.id === id);
+      if (!group) return Promise.resolve();
+      activeDeviceIndex = deviceGroups.indexOf(group);
+      deviceName.textContent = group.label;
+      setRevealedGroup(group.id);
+      flyTo(group.x, group.y, scaleForGroup(group), duration);
+      return new Promise(resolve => setTimeout(resolve, duration));
+    },
+    prepareEntrance,
+    prepareAllViewEntrance,
+    playEntrance,
+    playExit,
+    finalizeExit,
+  };
+
   viewport.addEventListener('wheel', onWheel, { passive: false });
   viewport.addEventListener('pointerdown', onPointerDown);
   viewport.addEventListener('pointermove', onPointerMove);

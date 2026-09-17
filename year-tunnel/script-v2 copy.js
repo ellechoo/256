@@ -15,11 +15,6 @@ let ringEls = [];
 let currentDepth = 0;
 let lastFrameTime = null;
 let spinAccumDeg = [];
-/* Set true while transition.js is driving currentDepth by hand (the
-   tunnel<->flat mode-switch animation). While paused, frameLoop hands
-   rendering entirely to the transition driver so the two don't fight
-   over the same frame. */
-let tunnelPaused = false;
 const stage = document.getElementById('tunnel-stage');
 const yearLabel = document.getElementById('year-label-text');
 const spacer = document.getElementById('scroll-spacer');
@@ -94,32 +89,22 @@ function buildRings() {
   });
 }
 
-function updateTunnel(deltaSec, globalScale, globalOpacity) {
-  if (globalScale === undefined) globalScale = 1;
-  if (globalOpacity === undefined) globalOpacity = 1;
+function updateTunnel(deltaSec) {
   const total = yearsData.length;
   ringEls.forEach((ring, ringIndex) => {
     const raw = ringIndex - currentDepth + CONFIG.focalOffset;
     const distance = raw - total * Math.round(raw / total);
-    const opacity = opacityForDistance(distance) * globalOpacity;
+    const opacity = opacityForDistance(distance);
     if (opacity <= 0) {
       ring.container.style.opacity = 0;
       ring.container.style.pointerEvents = 'none';
       return;
     }
-    // globalScale ramps 1 -> 0 (or 0 -> 1) during the tunnel<->flat
-    // transition's collapse/emerge beat, uniformly shrinking every ring
-    // toward the vanishing point at the viewport's center regardless of
-    // its individual depth. minRadiusPx is scaled along with it so rings
-    // actually converge on the center point instead of stalling at the
-    // usual floor.
-    const scale = scaleForDistance(distance) * globalScale;
-    const radius = Math.max(CONFIG.baseRadiusPx * scale, CONFIG.minRadiusPx * globalScale);
+    const scale = scaleForDistance(distance);
+    const radius = Math.max(CONFIG.baseRadiusPx * scale, CONFIG.minRadiusPx);
     const width = baselinePhotoWidth(ring.photos.length) * scale;
     ring.container.style.opacity = opacity;
-    ring.container.style.pointerEvents = (globalScale < 1 || globalOpacity < 1)
-      ? 'none'
-      : (opacity > 0.05 ? 'auto' : 'none');
+    ring.container.style.pointerEvents = opacity > 0.05 ? 'auto' : 'none';
     ring.photos.forEach(photo => {
       const height = width / (photo.aspectKnown ? photo.aspect : 1);
       photo.el.style.width = width + 'px';
@@ -253,21 +238,14 @@ function setupModalListeners() {
 
 function frameLoop(now) {
   /* Flat mode has its own static rendering and gesture loop. Do not keep
-     rotating or restyling 254 tunnel images underneath it — unless a
-     mode transition is in flight, in which case both viewports need to
-     keep rendering for the crossfade. */
-  if (document.body.classList.contains('mode-flat') && !document.body.classList.contains('mode-transitioning')) {
+     rotating or restyling 254 tunnel images underneath it. */
+  if (document.body.classList.contains('mode-flat')) {
     lastFrameTime = now;
     requestAnimationFrame(frameLoop);
     return;
   }
   const delta = Math.min((now - lastFrameTime) / 1000, 0.1);
   lastFrameTime = now;
-  if (tunnelPaused) {
-    // transition.js owns currentDepth and rendering entirely right now.
-    requestAnimationFrame(frameLoop);
-    return;
-  }
   ringEls.forEach((ring, index) => { spinAccumDeg[index] += CONFIG.spinDegPerSecond * ring.spinDir * delta; });
   currentDepth = window.scrollY / pixelsPerYear();
   updateTunnel(delta);
@@ -289,23 +267,3 @@ async function init() {
 }
 
 init();
-
-/* Bridge used by transition.js to drive the tunnel by hand during the
-   tunnel<->flat mode-switch animation, without duplicating any of the
-   tunnel's rendering math. */
-window.TunnelBridge = {
-  getYearsCount: () => yearsData.length,
-  getCurrentDepth: () => currentDepth,
-  setCurrentDepth: (depth) => { currentDepth = depth; },
-  pixelsPerYear,
-  setPaused: (paused) => { tunnelPaused = paused; },
-  // Renders one frame at the given global scale/opacity (both default to
-  // 1 for a normal frame; ramp them toward 0 to collapse the whole
-  // tunnel into its vanishing point).
-  renderFrame: (globalScale, globalOpacity) => {
-    updateTunnel(0.016, globalScale, globalOpacity);
-    updateTimelineActive();
-  },
-  setScrollToDepth: (depth) => { window.scrollTo(0, depth * pixelsPerYear()); },
-  getViewportEl: () => document.getElementById('tunnel-viewport'),
-};

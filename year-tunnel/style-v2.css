@@ -20,6 +20,21 @@ body.mode-flat #mode-toggle {
 body.mode-flat #mode-toggle:hover  { background: #222; border-color: #555; }
 body.mode-flat #mode-toggle:active { background: #2a2a2a; }
 
+#mode-toggle:disabled {
+  opacity: .5;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* While transition.js is animating the tunnel<->flat switch, keep the
+   tunnel-only chrome (year label, left timeline rail) out of the way —
+   both viewports may be mid-swap and neither one's overlay chrome
+   applies to what's on screen at that moment. */
+body.mode-transitioning #year-label,
+body.mode-transitioning #timeline {
+  visibility: hidden;
+}
+
 .flat-ring-v2 {
   position: absolute;
   top: 0;

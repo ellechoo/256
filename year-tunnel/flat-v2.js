@@ -12,7 +12,10 @@
     deviceFocusFillPx: 400, deviceFocusMinScale: 1.3, deviceFocusMaxScale: 4.2,
     flightDurationMs: 800,
     photoFraction: .012, photoMin: 60, photoMax: 180,
-    deviceMinScale: .70, devicePanBaseScale: .6, maxScale: 8,
+    
+    deviceMinScale: .85, devicePanBaseScale: .6, maxScale: 8,
+    deviceAllZone: .20,
+
     wheelIntensity: .002, pinchIntensity: .010,
     spinDegPerSecond: 3,
 
@@ -157,12 +160,15 @@
   
   function updateDeviceFocus() {
     if (!deviceGroups.length || flying) return;
-    if (view.scale <= minimumScale() + 0.05) {
+    const inAllZone = view.scale <= minimumScale() + CONFIG.deviceAllZone;
+    viewport.classList.toggle('is-all-view', inAllZone);
+    if (inAllZone) {
       activeDeviceIndex = deviceGroups.length;
       deviceName.textContent = 'All';
       setRevealedGroup(null);
       return;
     }
+
     const localX = -view.tx / (baseScale * view.scale);
     const localY = -view.ty / (baseScale * view.scale);
     let closest = 0, closestDistance = Infinity;
@@ -258,7 +264,9 @@
     // Font size scales gently with ring radius so the innermost and
     // outermost rings look proportionally consistent.
     const yearText = String(entry.year);
-    const yearFontSize = 44;
+    
+    const yearFontSize = 28;
+    
     const estimatedLabelWidth = yearText.length * yearFontSize * 0.6 + 28;
     const gapWidth = estimatedLabelWidth + 6;
     const circumference = 2 * Math.PI * radius;
@@ -270,9 +278,11 @@
     outline.setAttribute('cy', radius + 10);
     outline.setAttribute('r', radius);
     outline.setAttribute('stroke-dasharray', (circumference - gapWidth) + ' ' + gapWidth);
+    
     // Dash pattern starts at 3 o'clock; shift so the gap lands centered
-    // on 6 o'clock (bottom of the ring) where the year label sits.
-    outline.setAttribute('stroke-dashoffset', String(circumference * (0.75 - gapAngle / 720)));
+    // on 12 o'clock (top of the ring) where the year label sits.
+    outline.setAttribute('stroke-dashoffset', String(circumference * (0.25 - gapAngle / 720)));
+    
     hit.appendChild(outline);
 
     const hitCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -291,7 +301,7 @@
     const yearLabel = document.createElement('div');
     yearLabel.className = 'flat-year-label-v2';
     yearLabel.textContent = yearText;
-    yearLabel.style.top = radius + 'px';
+    yearLabel.style.top = -radius + 'px';
     yearLabel.style.fontSize = yearFontSize + 'px';
     ring.appendChild(yearLabel);
 

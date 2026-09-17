@@ -199,11 +199,11 @@ body.mode-flat #mode-toggle:active { background: #2a2a2a; }
   top: 0;
   left: 0;
   z-index: 5;
-  width: 360px;
-  margin-left: -180px;
-  margin-top: -13px;
+  width: 500px;              /* widened from 360px */
+  margin-left: -250px;       /* matched to half the new width */
+  margin-top: -22px;         /* re-centered vertically for the bigger face */
   color: #fff;
-  font: 600 26px/1 var(--font-sans);
+  font: 600 44px/1 var(--font-sans);
   letter-spacing: 0.16em;
   pointer-events: none;
   text-align: center;
@@ -214,4 +214,15 @@ body.mode-flat #mode-toggle:active { background: #2a2a2a; }
   #flat-year-label-v2 { top: 28px; }
   #flat-preview-v2 { display: none; }
   #flat-device-nav-v2 { bottom: 16px; gap: 10px; }
+}
+
+/* When zoomed all the way out, rings are too small to distinguish by
+   hover. Every ring renders at full brightness so the whole cluster
+   reads as one composition. The per-ring highlight is suppressed here
+   because there's nothing useful it could signal at this scale. */
+#flat-viewport.is-all-view .flat-ring-outline-v2,
+#flat-viewport.is-all-view .flat-ring-v2.is-highlighted .flat-ring-outline-v2 {
+  stroke: #fff;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
 }

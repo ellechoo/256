@@ -3,8 +3,10 @@
   'use strict';
   const viewport = document.getElementById('flat-viewport');
   const stage = document.getElementById('flat-stage');
-  const modeToggle = document.getElementById('mode-toggle');
-  if (!viewport || !stage || !modeToggle) return;
+  const modeSwitch = document.getElementById('mode-switch');
+  const modeSwitchYear = document.getElementById('mode-switch-year');
+  const modeSwitchDevice = document.getElementById('mode-switch-device');
+  if (!viewport || !stage || !modeSwitch || !modeSwitchYear || !modeSwitchDevice) return;
 
   const CONFIG = {
     design: 6000, allInner: .05, allOuter: .46, packPaddingPx: 110, packIterations: 420,
@@ -12,11 +14,25 @@
     deviceFocusFillPx: 400, deviceFocusMinScale: 1.3, deviceFocusMaxScale: 4.2,
     flightDurationMs: 800,
     photoFraction: .012, photoMin: 60, photoMax: 180,
-    
+
+    // A photo tile no longer fills its whole negative-space band edge
+    // to edge -- it's sized to this fraction of the band's width, so
+    // there's a small, even gap above and below the circle instead of
+    // it just barely grazing both bounding rings.
+    photoBandFill: .82,
+
     deviceMinScale: .85, devicePanBaseScale: .6, maxScale: 8,
     deviceAllZone: .20,
 
-    wheelIntensity: .002, pinchIntensity: .010,
+    // The zoomed-out "All" view is deliberately nudged south a little:
+    // the camera/POV sits a bit higher than dead-center on the cluster,
+    // which reads as slightly friendlier than a perfectly centered shot.
+    // In screen pixels (view.tx/view.ty are already screen-space), not
+    // world units, so it stays a constant, subtle nudge regardless of
+    // viewport size.
+    allViewSouthNudgePx: 70,
+
+    pinchIntensity: .010, trackpadPanIntensity: 1,
     spinDegPerSecond: 3,
 
     // Preview aspect — must match script-v2.js's minAspect / maxAspect
@@ -30,9 +46,23 @@
     ['film', 'Film'], ['compact', 'Compact'], ['dslr', 'DSLR'],
     ['mirrorless', 'Mirrorless'], ['phone', 'Phone'], ['pro', 'Pro'], ['other', 'Other'],
   ];
+
+  // Short blurbs for the device-group hover popup — kept in sync with
+  // the actual matching patterns in classifyDevice() below, so these
+  // stay accurate to what's really in each group rather than becoming
+  // a vague label.
+  const CATEGORY_DESCRIPTIONS = {
+    film: 'Photos shot on film. Most were digitized later by a scanner (Noritsu, Coolscan) rather than a camera. Early, pre-2003 photos with no camera metadata default here too.',
+    compact: 'Pocket point-and-shoot digital cameras, including Canon PowerShot & IXUS, Nikon Coolpix, Sony Cyber-shot, Olympus Stylus, Fujifilm FinePix, Kodak EasyShare, and Casio Exilim, from the early digital-camera years.',
+    dslr: 'Digital SLRs with interchangeable lenses, including Canon EOS, Nikon D-series, Sony Alpha (DSLR-A / SLT-A), and Pentax K-series bodies.',
+    mirrorless: 'Modern mirrorless interchangeable-lens cameras, including Sony Alpha (ILCE), Canon EOS R, Nikon Z, Olympus OM-D / OM-1, and Fujifilm X-series.',
+    phone: 'Smartphone cameras, including iPhone, Galaxy, and Pixel, standing in for however most day-to-day photos get taken now.',
+    pro: 'High-end professional and medium-format cameras: Hasselblad and Leica.',
+    other: 'Everything that didn\'t match a known camera pattern, usually a device string this classifier doesn\'t recognize.',
+  };
   let years = [], isFlat = false, baseScale = 1;
   let contentBounds = { x: 0, y: 0 };
-  let highlightedRing = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
+  let highlightedFill = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
   let deviceGroups = []; 
   let ringSpinners = [], lastSpinTime = 0;
   let revealedGroupId = null;
@@ -41,15 +71,18 @@
   const sessionOffsets = new Map();
   let lastPointer = null;
 
-  const label = document.createElement('div');
-  label.id = 'flat-year-label-v2';
-  label.innerHTML = '<span id="flat-year-label-text-v2">DEVICE GROUPS</span>';
-  
   const preview = document.createElement('div');
   preview.id = 'flat-preview-v2';
   preview.innerHTML = '<img alt=""><span></span>';
   const previewImage = preview.querySelector('img');
   const previewText = preview.querySelector('span');
+
+  const devicePreview = document.createElement('div');
+  devicePreview.id = 'flat-device-preview-v2';
+  devicePreview.innerHTML = '<strong></strong><p></p>';
+  const devicePreviewTitle = devicePreview.querySelector('strong');
+  const devicePreviewText = devicePreview.querySelector('p');
+
   const deviceNav = document.createElement('div');
   deviceNav.id = 'flat-device-nav-v2';
   deviceNav.innerHTML = '<button type="button" aria-label="Previous device group">&larr;</button><span>Device group</span><button type="button" aria-label="Next device group">&rarr;</button>';
@@ -58,6 +91,20 @@
   const nextDeviceButton = deviceNav.querySelector('button:last-child');
 
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
+
+  // A full circle expressed as its own SVG path subpath (two half-circle
+  // arcs). Used to build the donut/annulus hover-fill below -- two of
+  // these (outer, inner) combined under fill-rule="evenodd" paint solid
+  // everywhere between them and leave the inner disc hollow.
+  function circlePathD(cx, cy, r) {
+    return 'M ' + (cx + r) + ' ' + cy +
+      ' A ' + r + ' ' + r + ' 0 1 0 ' + (cx - r) + ' ' + cy +
+      ' A ' + r + ' ' + r + ' 0 1 0 ' + (cx + r) + ' ' + cy + ' Z';
+  }
+  function ringFillPathD(cx, cy, outerR, innerR) {
+    if (innerR <= 0) return circlePathD(cx, cy, outerR);
+    return circlePathD(cx, cy, outerR) + ' ' + circlePathD(cx, cy, innerR);
+  }
 
   function classifyDevice(device, year) {
     const value = (device || '').toLowerCase();
@@ -71,16 +118,21 @@
     return year < 2003 ? 'film' : 'other';
   }
   
-  function activateRing(ring, year) {
-    if (highlightedRing && highlightedRing !== ring) highlightedRing.classList.remove('is-highlighted');
-    highlightedRing = ring;
-    ring.classList.add('is-highlighted');
+  // Takes the specific fill <path> for the hovered ring (there's one
+  // per year, living in that group's shared fills layer -- see
+  // buildRingFills) rather than the ring div itself, since the fill is
+  // no longer a descendant of the ring it belongs to.
+  function activateRing(fillEl, year) {
+    if (!fillEl) return;
+    if (highlightedFill && highlightedFill !== fillEl) highlightedFill.classList.remove('is-highlighted');
+    highlightedFill = fillEl;
+    fillEl.classList.add('is-highlighted');
   }
 
-  function clearRing(ring) {
-    if (ring && highlightedRing !== ring) return;
-    if (highlightedRing) highlightedRing.classList.remove('is-highlighted');
-    highlightedRing = null;
+  function clearRing(fillEl) {
+    if (fillEl && highlightedFill !== fillEl) return;
+    if (highlightedFill) highlightedFill.classList.remove('is-highlighted');
+    highlightedFill = null;
   }
 
   function positionPreview(point) {
@@ -94,8 +146,22 @@
     preview.style.top  = clamp(point.y + 18, 12, window.innerHeight - h - 12) + 'px';
   }
 
-  function showPreview(photo, year, ring, event) {
-    activateRing(ring, year);
+  function positionDevicePreview(point) {
+    const w = devicePreview.offsetWidth  || 240;
+    const h = devicePreview.offsetHeight || 60;
+    devicePreview.style.left = clamp(point.x + 18, 12, window.innerWidth  - w - 12) + 'px';
+    devicePreview.style.top  = clamp(point.y + 18, 12, window.innerHeight - h - 12) + 'px';
+  }
+
+  function showDevicePreview(groupId, label, event) {
+    devicePreviewTitle.textContent = label;
+    devicePreviewText.textContent = CATEGORY_DESCRIPTIONS[groupId] || '';
+    if (event) positionDevicePreview({ x: event.clientX, y: event.clientY });
+    devicePreview.classList.add('is-visible');
+  }
+
+  function showPreview(photo, year, fillEl, event) {
+    activateRing(fillEl, year);
     previewText.textContent = '09.03.' + year;
     previewImage.src = 'photos/' + encodeURIComponent(photo.file);
     previewImage.alt = photo.file + ' (' + year + ')';
@@ -124,10 +190,10 @@
     }
   }
 
-  function leaveRing(ring, event) {
+  function leaveRing(ring, fillEl, event) {
     if (ring.contains(event.relatedTarget)) return;
     preview.classList.remove('is-visible');
-    clearRing(ring);
+    clearRing(fillEl);
   }
 
   let flying = false, flightId = 0;
@@ -149,13 +215,33 @@
       view.ty = startTy + (targetTy - startTy) * eased;
       view.scale = startScale + (targetScale - startScale) * eased;
       applyView();
-      if (t < 1) requestAnimationFrame(step);
-      else flying = false;
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        flying = false;
+        // applyView()'s own updateDeviceFocus() call just above ran
+        // while `flying` was still true, so it no-op'd -- the "is All
+        // view" class (and the prominent-ring styling that depends on
+        // it) never actually got applied on arrival. Run it once more
+        // now that the flight has genuinely finished, so landing on
+        // "All" via the arrow button looks right immediately instead
+        // of only after the next manual pan/zoom nudges it.
+        updateDeviceFocus();
+      }
     })(startTime);
   }
   function scaleForGroup(group) {
     const raw = CONFIG.deviceFocusFillPx / (group.radius * baseScale);
     return clamp(raw, CONFIG.deviceFocusMinScale, CONFIG.deviceFocusMaxScale);
+  }
+
+  // flyTo() takes a world-space point to center on; the "All" view's
+  // south nudge is specified in constant screen pixels instead (see
+  // CONFIG.allViewSouthNudgePx), so this converts that pixel amount
+  // into the world-space Y that lands there once flyTo does its own
+  // -worldY * baseScale * scale conversion.
+  function allViewWorldY() {
+    return -CONFIG.allViewSouthNudgePx / (baseScale * minimumScale());
   }
   
   function updateDeviceFocus() {
@@ -214,7 +300,7 @@
     if (activeDeviceIndex === deviceGroups.length) {
       deviceName.textContent = 'All';
       setRevealedGroup(null);
-      flyTo(0, 0, minimumScale(), CONFIG.flightDurationMs);
+      flyTo(0, allViewWorldY(), minimumScale(), CONFIG.flightDurationMs);
       return;
     }
     const group = deviceGroups[activeDeviceIndex];
@@ -232,7 +318,7 @@
       event.stopPropagation();
       focusDevice(activeDeviceIndex + 1);
     });
-    viewport.append(label, preview, deviceNav);
+    viewport.append(preview, devicePreview, deviceNav);
   }
 
   // Per-ring start angle. Stable within a session, fresh on reload.
@@ -246,11 +332,31 @@
     return sessionOffsets.get(key);
   }
 
-    function addRing(parent, entry, yearIndex, radius, centerX, centerY, rotationOffset, groupId) {
+    function addRing(parent, entry, yearIndex, radius, centerX, centerY, rotationOffset, groupId, ringGap, fillEl) {
     const ring = document.createElement('div');
     ring.className = 'flat-ring-v2';
     ring.dataset.year = entry.year;
     ring.style.transform = 'translate(' + centerX + 'px,' + centerY + 'px)';
+
+    // The visible outline drawn below, at `radius`, is this year's own
+    // ring position (unchanged from before). But the year's *negative
+    // space* -- where its photos actually live -- is the band between
+    // that outline and the previous ring in toward the center (or the
+    // group's extra innermost boundary ring for the very first year).
+    // Since every ring in a group is spaced exactly `ringGap` apart,
+    // that band is always `ringGap` wide, centered half a gap inward
+    // from this ring's own outline.
+    const photoBandWidth = ringGap;
+    const photoRadius = radius - ringGap / 2;
+
+    // The hover fill for this year (the donut-shaped highlight over its
+    // negative-space band) is NOT built here -- it lives in a shared
+    // layer built once per group, appended to the stage before any
+    // ring in that group (see buildRingFills / buildDeviceGroups), so
+    // that a lit-up ring can never paint over a neighboring ring's
+    // outline or year-number label. `fillEl` is just that pre-built
+    // element, passed in so the interaction handlers below can toggle
+    // its highlight.
 
     const hit = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     hit.classList.add('flat-ring-hit-v2');
@@ -278,20 +384,26 @@
     outline.setAttribute('cy', radius + 10);
     outline.setAttribute('r', radius);
     outline.setAttribute('stroke-dasharray', (circumference - gapWidth) + ' ' + gapWidth);
-    
+
     // Dash pattern starts at 3 o'clock; shift so the gap lands centered
     // on 12 o'clock (top of the ring) where the year label sits.
     outline.setAttribute('stroke-dashoffset', String(circumference * (0.25 - gapAngle / 720)));
-    
+
     hit.appendChild(outline);
 
+    // The hover target now tracks the photo band (photoRadius) rather
+    // than the outline itself, so hovering anywhere in the negative
+    // space where the photos actually sit -- not just exactly on the
+    // boundary line -- highlights the ring. Its stroke is widened to
+    // roughly the band's width so it covers that whole space.
     const hitCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     hitCircle.classList.add('flat-ring-hit-circle-v2');
     hitCircle.setAttribute('cx', radius + 10);
     hitCircle.setAttribute('cy', radius + 10);
-    hitCircle.setAttribute('r', radius);
-    hitCircle.addEventListener('pointerenter', () => activateRing(ring, entry.year));
-    hitCircle.addEventListener('pointerleave', event => leaveRing(ring, event));
+    hitCircle.setAttribute('r', photoRadius);
+    hitCircle.style.strokeWidth = Math.max(20, photoBandWidth) + 'px';
+    hitCircle.addEventListener('pointerenter', () => activateRing(fillEl, entry.year));
+    hitCircle.addEventListener('pointerleave', event => leaveRing(ring, fillEl, event));
     hit.appendChild(hitCircle);
     ring.appendChild(hit);
 
@@ -307,7 +419,12 @@
 
 
 
-    const tileSize = clamp(CONFIG.design * CONFIG.photoFraction, CONFIG.photoMin, CONFIG.photoMax);
+    // Sized a little smaller than the negative-space band (ringGap
+    // wide) itself, so there's a bit of breathing room above and below
+    // each circle instead of it exactly touching both bounding rings.
+    // Still centered on the same photoRadius, so the gap is even on
+    // both sides.
+    const tileSize = photoBandWidth * CONFIG.photoBandFill;
     const tileData = [];
     entry.photos.forEach((photo, photoIndex) => {
       const tile = document.createElement('button');
@@ -318,8 +435,8 @@
       tile.style.height = tileSize + 'px';
       tile.style.marginLeft = -tileSize / 2 + 'px';
       tile.style.marginTop = -tileSize / 2 + 'px';
-      
-      tile.style.backgroundColor = photo.hex || '#c9c9c9';
+
+      tile.style.backgroundColor = '#ffffff';
       tile.dataset.group = groupId;
 
       const img = document.createElement('img');
@@ -329,30 +446,102 @@
 
       const angle = 360 / entry.photos.length * photoIndex + rotationOffset;
 
-      tile.style.transform = 'rotate(' + angle + 'deg) translateY(' + -radius + 'px)';
+      tile.style.transform = 'rotate(' + angle + 'deg) translateY(' + -photoRadius + 'px)';
       tile.setAttribute('aria-label', photo.file + ', September 3, ' + entry.year);
-      tile.addEventListener('pointerenter', event => showPreview(photo, entry.year, ring, event));
-      
-      tile.addEventListener('pointermove', event => positionPreview({ x: event.clientX, y: event.clientY }));
-      
+      tile.addEventListener('pointerenter', event => showPreview(photo, entry.year, fillEl, event));
 
-      tile.addEventListener('pointerleave', event => leaveRing(ring, event));
-      tile.addEventListener('focus', () => showPreview(photo, entry.year, ring));
+      tile.addEventListener('pointermove', event => positionPreview({ x: event.clientX, y: event.clientY }));
+
+
+      tile.addEventListener('pointerleave', event => leaveRing(ring, fillEl, event));
+      tile.addEventListener('focus', () => showPreview(photo, entry.year, fillEl));
       tile.addEventListener('blur', () => {
         preview.classList.remove('is-visible');
-        clearRing(ring);
+        clearRing(fillEl);
       });
       ring.appendChild(tile);
       tileData.push({ el: tile, baseAngle: angle });
     });
     ringSpinners.push({
       tiles: tileData,
-      radius,
+      radius: photoRadius,
       direction: yearIndex % 2 === 0 ? 1 : -1,
       spin: 0,
     });
     parent.appendChild(ring);
     return ring;
+  }
+
+  // A plain, static outline with no year, label, or photos of its own --
+  // added just inside each group's smallest year ring so that year gets
+  // a negative-space band to sit in too, the same as every other year.
+  function addBoundaryRing(parent, radius, centerX, centerY) {
+    const ring = document.createElement('div');
+    ring.className = 'flat-ring-v2 flat-ring-boundary-v2';
+    ring.style.transform = 'translate(' + centerX + 'px,' + centerY + 'px)';
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('flat-ring-hit-v2');
+    svg.setAttribute('viewBox', '0 0 ' + (radius * 2 + 20) + ' ' + (radius * 2 + 20));
+    svg.style.width = radius * 2 + 20 + 'px';
+    svg.style.height = radius * 2 + 20 + 'px';
+    svg.style.marginLeft = -radius - 10 + 'px';
+    svg.style.marginTop = -radius - 10 + 'px';
+
+    const outline = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    outline.classList.add('flat-ring-outline-v2');
+    outline.setAttribute('cx', radius + 10);
+    outline.setAttribute('cy', radius + 10);
+    outline.setAttribute('r', radius);
+    svg.appendChild(outline);
+    ring.appendChild(svg);
+
+    parent.appendChild(ring);
+    return ring;
+  }
+
+  // Every year in a group gets its hover-fill donut built here, all at
+  // once, in one shared SVG layer appended to the stage before any of
+  // that group's actual rings (outlines, year labels, photos). DOM
+  // paint order is back-to-front, so this guarantees every fill paints
+  // *underneath* every outline and year label -- including a neighbor
+  // ring's, at the shared boundary line two adjacent years' bands meet
+  // at -- rather than the two being interleaved ring-by-ring, which is
+  // what let a hovered ring's fill cover the ring just inside it.
+  // Returns a year -> <path> map so addRing's interaction handlers can
+  // toggle the right one.
+  function buildRingFills(parent, chronological, startRadius, ringGap, groupRadius, centerX, centerY) {
+    const wrap = document.createElement('div');
+    wrap.className = 'flat-ring-v2 flat-ring-fills-v2';
+    wrap.style.transform = 'translate(' + centerX + 'px,' + centerY + 'px)';
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('flat-ring-hit-v2');
+    svg.setAttribute('viewBox', '0 0 ' + (groupRadius * 2 + 20) + ' ' + (groupRadius * 2 + 20));
+    svg.style.width = groupRadius * 2 + 20 + 'px';
+    svg.style.height = groupRadius * 2 + 20 + 'px';
+    svg.style.marginLeft = -groupRadius - 10 + 'px';
+    svg.style.marginTop = -groupRadius - 10 + 'px';
+    wrap.appendChild(svg);
+
+    // One shared coordinate space (sized to the group's own outermost
+    // ring) instead of each ring's private, differently-sized box, so
+    // a single constant center point works for every year's path here.
+    const cx = groupRadius + 10, cy = groupRadius + 10;
+    const fillEls = new Map();
+    chronological.forEach(([year], yearIndex) => {
+      const outerR = startRadius + yearIndex * ringGap;
+      const innerR = Math.max(0, outerR - ringGap);
+      const fill = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      fill.classList.add('flat-ring-fill-v2');
+      fill.dataset.year = year;
+      fill.setAttribute('d', ringFillPathD(cx, cy, outerR, innerR));
+      svg.appendChild(fill);
+      fillEls.set(year, fill);
+    });
+
+    parent.appendChild(wrap);
+    return fillEls;
   }
 
   function packDeviceCircles(groups) {
@@ -406,6 +595,17 @@
       return { ...group, chronological, radius: startRadius + ringGap * (chronological.length - 1) };
     });
     packDeviceCircles(active);
+
+    // Pass 1: every group's hover-fill layer, all appended before any
+    // group's outlines/labels/photos. See buildRingFills for why this
+    // has to be a separate first pass rather than folded into the loop
+    // below (a fill built inline, ring-by-ring, would still paint over
+    // *other* groups' or even that same group's earlier rings).
+    const fillElsByGroup = new Map();
+    active.forEach(group => {
+      fillElsByGroup.set(group.id, buildRingFills(stage, group.chronological, startRadius, ringGap, group.radius, group.x, group.y));
+    });
+
     let maxX = 0, maxY = 0;
     active.forEach(group => {
       const { x, y, radius, label } = group;
@@ -413,11 +613,26 @@
       deviceLabel.className = 'flat-device-label-v2';
       deviceLabel.textContent = label;
       deviceLabel.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      deviceLabel.setAttribute('tabindex', '0');
+      deviceLabel.addEventListener('pointerenter', event => showDevicePreview(group.id, label, event));
+      deviceLabel.addEventListener('pointermove', event => positionDevicePreview({ x: event.clientX, y: event.clientY }));
+      deviceLabel.addEventListener('pointerleave', () => devicePreview.classList.remove('is-visible'));
+      deviceLabel.addEventListener('focus', () => showDevicePreview(group.id, label));
+      deviceLabel.addEventListener('blur', () => devicePreview.classList.remove('is-visible'));
       stage.appendChild(deviceLabel);
 
       const groupRingEls = [];
+
+      // One extra ring just inside the group's smallest year, purely so
+      // that year also gets a negative-space band to sit in (its own
+      // ring, at startRadius, would otherwise have nothing bounding it
+      // on the inside).
+      const boundaryRingEl = addBoundaryRing(stage, Math.max(0, startRadius - ringGap), x, y);
+      groupRingEls.push(boundaryRingEl);
+
+      const fillEls = fillElsByGroup.get(group.id);
       group.chronological.forEach(([year, photos], yearIndex) => {
-        const ringEl = addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, ringOffset(group.id, year), group.id);
+        const ringEl = addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, ringOffset(group.id, year), group.id, ringGap, fillEls.get(year));
         groupRingEls.push(ringEl);
       });
 
@@ -474,8 +689,17 @@
     view.tx = clamp(view.tx, -travelX, travelX);
     view.ty = clamp(view.ty, -travelY, travelY);
   }
+  // Double-click resets the camera back to whatever group (or "All")
+  // is currently focused, not always the very first "film" stop --
+  // it's meant to un-do drift from panning/zooming around within the
+  // current group, landing back on that group's own default framing.
+  // Only the very first time flat mode is entered, before the user has
+  // focused anything, is there no "current" group yet, so that one
+  // case still falls back to the home group.
   function resetView() {
-    if (deviceGroups.length) focusDevice(homeDeviceIndex);
+    if (!deviceGroups.length) return;
+    const index = activeDeviceIndex >= 0 ? activeDeviceIndex : homeDeviceIndex;
+    focusDevice(index);
   }
 
   function pairMetrics() {
@@ -532,14 +756,33 @@
   function onWheel(event) {
     if (!isFlat) return;
     event.preventDefault();
-    const intensity = event.ctrlKey ? CONFIG.pinchIntensity : CONFIG.wheelIntensity;
-    const nextScale = clamp(view.scale * Math.exp(-event.deltaY * intensity), minimumScale(), CONFIG.maxScale);
-    const ratio = nextScale / view.scale;
-    const x = event.clientX - window.innerWidth / 2;
-    const y = event.clientY - window.innerHeight / 2;
-    view.tx = x - (x - view.tx) * ratio;
-    view.ty = y - (y - view.ty) * ratio;
-    view.scale = nextScale;
+    if (event.ctrlKey) {
+      // Browsers set ctrlKey on the wheel event a trackpad pinch
+      // produces specifically so it can be told apart from an
+      // ordinary two-finger scroll/swipe (which reports ctrlKey:
+      // false) -- that's the real signal for "the user is pinching",
+      // not just "a wheel event happened". Zoom, centered on the
+      // cursor, same as before.
+      const nextScale = clamp(view.scale * Math.exp(-event.deltaY * CONFIG.pinchIntensity), minimumScale(), CONFIG.maxScale);
+      const ratio = nextScale / view.scale;
+      const x = event.clientX - window.innerWidth / 2;
+      const y = event.clientY - window.innerHeight / 2;
+      view.tx = x - (x - view.tx) * ratio;
+      view.ty = y - (y - view.ty) * ratio;
+      view.scale = nextScale;
+    } else {
+      // A plain two-finger swipe now pans instead of zooming, so it
+      // reads as a smoother version of click-and-drag rather than a
+      // separate zoom gesture. (An ordinary mouse scroll wheel is
+      // indistinguishable from a trackpad swipe at the wheel-event
+      // level, so it now pans too -- there's no reliable way to tell
+      // the two apart from here.) The sign matches the browser's own
+      // scrollLeft/scrollTop += delta convention, which -- with
+      // natural scrolling, the default -- already tracks the fingers
+      // the same way a drag does.
+      view.tx -= event.deltaX * CONFIG.trackpadPanIntensity;
+      view.ty -= event.deltaY * CONFIG.trackpadPanIntensity;
+    }
     clampView();
     applyView();
   }
@@ -565,8 +808,9 @@
     document.body.style.overflow = 'hidden';
     document.body.classList.add('mode-flat');
     viewport.setAttribute('aria-hidden', 'false');
-    modeToggle.textContent = 'Tunnel';
-    modeToggle.setAttribute('aria-pressed', 'true');
+    modeSwitch.classList.add('is-device');
+    modeSwitchYear.setAttribute('aria-pressed', 'false');
+    modeSwitchDevice.setAttribute('aria-pressed', 'true');
     isFlat = true;
   }
 
@@ -587,7 +831,7 @@
     } else {
       view.scale = minimumScale();
       view.tx = 0;
-      view.ty = 0;
+      view.ty = CONFIG.allViewSouthNudgePx;
     }
     clampView();
     applyView();
@@ -603,7 +847,7 @@
     buildView();
     view.scale = minimumScale();
     view.tx = 0;
-    view.ty = 0;
+    view.ty = CONFIG.allViewSouthNudgePx;
     clampView();
     applyView();
     return getClosestGroupToView();
@@ -774,6 +1018,7 @@
     gesture = null;
     lastPointer = null;
     preview.classList.remove('is-visible');
+    devicePreview.classList.remove('is-visible');
     clearRing();
     viewport.classList.remove('is-dragging');
     viewport.style.pointerEvents = '';
@@ -781,8 +1026,9 @@
     viewport.setAttribute('aria-hidden', 'true');
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    modeToggle.textContent = 'Flat';
-    modeToggle.setAttribute('aria-pressed', 'false');
+    modeSwitch.classList.remove('is-device');
+    modeSwitchYear.setAttribute('aria-pressed', 'true');
+    modeSwitchDevice.setAttribute('aria-pressed', 'false');
     isFlat = false;
   }
 

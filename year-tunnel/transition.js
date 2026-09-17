@@ -1,13 +1,14 @@
-/* MODE TRANSITION — owns the mode-toggle button and choreographs the
-   tunnel <-> flat switch. It never touches tunnel or flat rendering
+/* MODE TRANSITION — owns the year/device mode-switch nav and choreographs
+   the tunnel <-> flat switch. It never touches tunnel or flat rendering
    math directly; it only calls the primitives each side exposes via
    window.TunnelBridge / window.Flat.
 
    Tunnel -> Flat:
-     1. Quickly sweep the tunnel through one lap (rings cycle past).
-     2. Collapse everything to the vanishing point at screen center
-        while the tunnel's background fades to black.
-     3. Swap to flat (already black) and grow the target device group's
+     1. Quickly sweep the tunnel through one lap (rings cycle past) and
+        collapse everything to the vanishing point at screen center, as
+        one continuous move — the background fades toward black the
+        whole time too, finishing exactly as the collapse settles.
+     2. Swap to flat (already black) and grow the target device group's
         rings out from that same screen-center point, while every other
         group flies in from just off-screen to its packed position.
 
@@ -23,13 +24,19 @@
 (function () {
   'use strict';
 
-  const modeToggle = document.getElementById('mode-toggle');
-  if (!modeToggle) return;
+  const modeSwitchYear = document.getElementById('mode-switch-year');
+  const modeSwitchDevice = document.getElementById('mode-switch-device');
+  if (!modeSwitchYear || !modeSwitchDevice) return;
+
+  function setNavDisabled(disabled) {
+    modeSwitchYear.disabled = disabled;
+    modeSwitchDevice.disabled = disabled;
+  }
 
   const TUNNEL_LAP_MS = 600;
   const TUNNEL_COLLAPSE_MS = 360;
-  const TUNNEL_EMERGE_MS = 360;
-  const TUNNEL_RUN_MS = 600;
+  const TUNNEL_DEPARTURE_MS = TUNNEL_LAP_MS + TUNNEL_COLLAPSE_MS;
+  const TUNNEL_LANDING_MS = 900;
   const FLAT_ENTRANCE_MS = 700;
   const FLAT_EXIT_MS = 520;
   const ALL_VIEW_PREZOOM_MS = 380;
@@ -38,6 +45,7 @@
   const lerp = (a, b, t) => a + (b - a) * t;
   function easeInCubic(t) { return t * t * t; }
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
   function hexToRgb(hex) {
     const n = parseInt(hex.slice(1), 16);
@@ -73,7 +81,7 @@
 
   async function tunnelToFlat() {
     animating = true;
-    modeToggle.disabled = true;
+    setNavDisabled(true);
     document.body.classList.add('mode-transitioning');
 
     const tunnelViewport = window.TunnelBridge.getViewportEl();
@@ -84,19 +92,38 @@
     const lap = window.TunnelBridge.getYearsCount() || 1;
     const sweepEnd = startDepth - lap;
 
-    // Phase 1: quickly run through one lap of the tunnel.
-    await tween(TUNNEL_LAP_MS, t => {
-      const eased = easeInCubic(t);
-      window.TunnelBridge.setCurrentDepth(lerp(startDepth, sweepEnd, eased));
-      window.TunnelBridge.renderFrame(1, 1);
-    });
-
-    // Phase 2: collapse everything into the vanishing point at center,
-    // fading the tunnel to black as it goes.
-    await tween(TUNNEL_COLLAPSE_MS, t => {
-      const eased = easeInCubic(t);
-      window.TunnelBridge.renderFrame(1 - eased, 1 - eased);
-      tunnelViewport.style.background = lerpColor('#ffffff', '#000000', eased);
+    // Lap sweep and collapse play as ONE continuous tween rather than
+    // two separate awaited beats. Two separate tween() calls means a
+    // real animation-frame boundary between them, and the lap sweep's
+    // very last frame lands exactly one full period back — which, same
+    // as the tunnel's periodic math that bit us on the flat->tunnel
+    // side, looks *identical* to the year the user left, rendered at
+    // full brightness. That frame would actually paint before the
+    // collapse got a chance to start fading it, reading as a flash of
+    // "the year I left on" between the sweep and flat appearing.
+    // Keeping depth in continuous motion for the whole departure (it
+    // only ever stops once it's already invisible) avoids that. Position
+    // uses easeOutCubic rather than easeInCubic so it has real velocity
+    // from frame one instead of lingering near the start — a slow-start
+    // curve here would otherwise hold on a nearly-static, fully visible
+    // "year I left on" frame for the first several frames.
+    //
+    // The shrink (visibility) is NOT gated to only start after the lap
+    // finishes — it ramps across the whole tween using easeInCubic(t)
+    // directly (back-loaded, negligible at first, accelerating toward
+    // the end). Gating it to kick in only partway through used to create
+    // a "scrolls one lap, STOPS, and then shrinks" feel: position (on
+    // easeOutCubic) was already decelerating into its coast by the time
+    // the gate opened, so the shrink's sudden onset read as a second,
+    // disconnected beat. Letting it overlap the sweep from t=0 means the
+    // tunnel is already subtly collapsing while it's still cycling, so
+    // there's no seam between "sweeping" and "shrinking".
+    await tween(TUNNEL_DEPARTURE_MS, t => {
+      const posEased = easeOutCubic(t);
+      window.TunnelBridge.setCurrentDepth(lerp(startDepth, sweepEnd, posEased));
+      const visibility = 1 - easeInCubic(t);
+      window.TunnelBridge.renderFrame(visibility, visibility);
+      tunnelViewport.style.background = lerpColor('#ffffff', '#000000', easeInOutCubic(t));
     });
 
     tunnelViewport.style.display = 'none';
@@ -120,13 +147,13 @@
     document.body.classList.remove('mode-transitioning');
     hasVisitedFlat = true;
     mode = 'flat';
-    modeToggle.disabled = false;
+    setNavDisabled(false);
     animating = false;
   }
 
   async function flatToTunnel() {
     animating = true;
-    modeToggle.disabled = true;
+    setNavDisabled(true);
     document.body.classList.add('mode-transitioning');
     window.TunnelBridge.setPaused(true);
 
@@ -154,19 +181,22 @@
     window.TunnelBridge.setCurrentDepth(emergeStart);
     window.TunnelBridge.renderFrame(0, 0);
 
-    // Phase 2: emerge from the vanishing point, fading back to white.
-    await tween(TUNNEL_EMERGE_MS, t => {
-      const eased = easeOutCubic(t);
-      window.TunnelBridge.renderFrame(eased, eased);
-      tunnelViewport.style.background = lerpColor('#000000', '#ffffff', eased);
-    });
-
-    // Phase 3: quickly run the last lap, landing on the year the user
-    // was last looking at.
-    await tween(TUNNEL_RUN_MS, t => {
+    // Phase 2: emerge from the vanishing point AND run the last lap in
+    // one continuous move, landing on the year the user was last
+    // looking at. These two have to happen together, not as separate
+    // beats — emergeStart is exactly one lap behind targetDepth, so the
+    // tunnel's periodic math makes that starting position look
+    // *identical* to the final landing frame. Fading it in first and
+    // only then sweeping through the lap would show the correct year
+    // right away, then needlessly run away from it and back — which
+    // reads as "jumps to where it left off, then animates". Ramping
+    // position and visibility together means nothing fully legible is
+    // on screen until it actually arrives.
+    await tween(TUNNEL_LANDING_MS, t => {
       const eased = easeOutCubic(t);
       window.TunnelBridge.setCurrentDepth(lerp(emergeStart, targetDepth, eased));
-      window.TunnelBridge.renderFrame(1, 1);
+      window.TunnelBridge.renderFrame(eased, eased);
+      tunnelViewport.style.background = lerpColor('#000000', '#ffffff', eased);
     });
 
     window.TunnelBridge.setCurrentDepth(targetDepth);
@@ -176,21 +206,25 @@
 
     document.body.classList.remove('mode-transitioning');
     mode = 'tunnel';
-    modeToggle.disabled = false;
+    setNavDisabled(false);
     animating = false;
   }
 
-  modeToggle.addEventListener('click', () => {
-    if (animating) return;
-    if (mode === 'tunnel') tunnelToFlat();
-    else flatToTunnel();
+  modeSwitchDevice.addEventListener('click', () => {
+    if (animating || mode === 'flat') return;
+    tunnelToFlat();
   });
 
-  // The toggle starts disabled (see index-v2.html) until both the
+  modeSwitchYear.addEventListener('click', () => {
+    if (animating || mode === 'tunnel') return;
+    flatToTunnel();
+  });
+
+  // The switch starts disabled (see index-v2.html) until both the
   // tunnel and flat datasets have finished loading.
   (function whenReady() {
     if (window.TunnelBridge && window.TunnelBridge.getYearsCount() > 0 && window.Flat && window.Flat.isReady()) {
-      modeToggle.disabled = false;
+      setNavDisabled(false);
     } else {
       setTimeout(whenReady, 60);
     }

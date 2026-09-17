@@ -21,7 +21,6 @@ let spinAccumDeg = [];
    over the same frame. */
 let tunnelPaused = false;
 const stage = document.getElementById('tunnel-stage');
-const yearLabel = document.getElementById('year-label-text');
 const spacer = document.getElementById('scroll-spacer');
 const timelineEl = document.getElementById('timeline');
 const BUFFER_CYCLES = 40;
@@ -130,7 +129,6 @@ function updateTunnel(deltaSec, globalScale, globalOpacity) {
       photo.el.style.transform = 'rotate(' + (photo.angleDeg + spinAccumDeg[ringIndex]) + 'deg) translateY(' + -radius + 'px) scale(' + photo.hoverScale + ')';
     });
   });
-  if (!isModalOpen) yearLabel.textContent = '09.03.' + yearsData[activeYearIndex()].year;
 }
 
 function activeYearIndex() {
@@ -185,7 +183,6 @@ function fillModal() {
   const state = ringEls[modalRingIndex].photos[modalPhotoIndex];
   const entry = yearsData[modalRingIndex];
   const photo = entry.photos[modalPhotoIndex];
-  yearLabel.textContent = '09.03.' + entry.year;
   modalPhoto.src = state.img.src;
   modalPhoto.alt = state.img.alt;
   modalTitle.textContent = photo.title || (photo.file || '').replace(/\.[^.]+$/, '') || String(entry.year);

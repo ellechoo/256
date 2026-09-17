@@ -3,14 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>September 3rd — A Tunnel Through Time</title>
+  <title>256 Part 2</title>
   <link rel="stylesheet" href="style-v2.css">
 </head>
 <body>
-  <button id="mode-toggle" type="button" aria-pressed="false" disabled>Flat</button>
+  <div id="mode-nav">
+    <span id="mode-nav-text">Organize September 3 by</span>
+    <div id="mode-switch">
+      <button id="mode-switch-year" type="button" aria-pressed="true" disabled>Year</button>
+      <span id="mode-switch-track" aria-hidden="true"><span id="mode-switch-knob"></span></span>
+      <button id="mode-switch-device" type="button" aria-pressed="false" disabled>Device</button>
+    </div>
+  </div>
 
   <div id="tunnel-viewport"><div id="tunnel-stage"></div></div>
-  <div id="year-label"><span id="year-label-text"></span></div>
   <div id="scroll-spacer"></div>
   <nav id="timeline" aria-label="Year timeline"></nav>
 

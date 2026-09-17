@@ -7,24 +7,46 @@
   if (!viewport || !stage || !modeToggle) return;
 
   const CONFIG = {
-    design: 6000, allInner: .05, allOuter: .46, packPaddingPx: 46, packIterations: 420,
-    photoFraction: .012, photoMin: 60, photoMax: 180, allMinScale: 1, deviceMinScale: .55, devicePanBaseScale: .6, maxScale: 8,
-    wheelIntensity: .002, pinchIntensity: .010, rotation: 137.50776405003785,
+    design: 6000, allInner: .05, allOuter: .46, packPaddingPx: 110, packIterations: 420,
+    packPullX: .997, packPullY: .984,
+    deviceFocusFillPx: 400, deviceFocusMinScale: 1.3, deviceFocusMaxScale: 4.2,
+    flightDurationMs: 800,
+    photoFraction: .012, photoMin: 60, photoMax: 180,
+    deviceMinScale: .70, devicePanBaseScale: .6, maxScale: 8,
+    wheelIntensity: .002, pinchIntensity: .010,
+    spinDegPerSecond: 3,
+
+    // Preview aspect — must match script-v2.js's minAspect / maxAspect
+    // so a photo previews the same shape in both modes.
+    previewWidth: 178,
+    previewMinAspect: 2 / 3,
+    previewMaxAspect: 3 / 2,
   };
-  const CATEGORIES = [['all','All'],['film','Film'],['compact','Compact'],['dslr','DSLR'],['mirrorless','Mirrorless'],['phone','Phone'],['pro','Pro'],['other','Other']];
-  let years = [], isFlat = false, savedScrollY = 0, baseScale = 1, contentBounds = { x: 0, y: 0 };
-  let activeFilter = 'all', layout = 'all', highlightedRing = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
-  let deviceGroups = [];
-  const chips = [], pointers = new Map(), view = { scale: 1, tx: 0, ty: 0 };
+
+  const CATEGORIES = [
+    ['film', 'Film'], ['compact', 'Compact'], ['dslr', 'DSLR'],
+    ['mirrorless', 'Mirrorless'], ['phone', 'Phone'], ['pro', 'Pro'], ['other', 'Other'],
+  ];
+  let years = [], isFlat = false, savedScrollY = 0, baseScale = 1;
+  let contentBounds = { x: 0, y: 0 };
+  let highlightedRing = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
+  let deviceGroups = []; 
+  let ringSpinners = [], lastSpinTime = 0;
+  let revealedGroupId = null;
+
+  const pointers = new Map(), view = { scale: 1, tx: 0, ty: 0 };
+  const sessionOffsets = new Map();
+  let lastPointer = null;
 
   const label = document.createElement('div');
-  label.id = 'flat-year-label-v2'; label.innerHTML = '<span id="flat-year-label-text-v2">ALL PHOTOS</span>';
-  const labelText = label.firstElementChild;
+  label.id = 'flat-year-label-v2';
+  label.innerHTML = '<span id="flat-year-label-text-v2">DEVICE GROUPS</span>';
+  
   const preview = document.createElement('div');
-  preview.id = 'flat-preview-v2'; preview.innerHTML = '<img alt=""><span></span>';
-  const previewImage = preview.querySelector('img'), previewText = preview.querySelector('span');
-  const layoutToggle = document.createElement('button');
-  layoutToggle.id = 'flat-layout-toggle-v2'; layoutToggle.type = 'button'; layoutToggle.textContent = 'Device groups'; layoutToggle.setAttribute('aria-pressed', 'false');
+  preview.id = 'flat-preview-v2';
+  preview.innerHTML = '<img alt=""><span></span>';
+  const previewImage = preview.querySelector('img');
+  const previewText = preview.querySelector('span');
   const deviceNav = document.createElement('div');
   deviceNav.id = 'flat-device-nav-v2';
   deviceNav.innerHTML = '<button type="button" aria-label="Previous device group">&larr;</button><span>Device group</span><button type="button" aria-label="Next device group">&rarr;</button>';
@@ -33,6 +55,7 @@
   const nextDeviceButton = deviceNav.querySelector('button:last-child');
 
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
+
   function classifyDevice(device, year) {
     const value = (device || '').toLowerCase();
     if (!value) return year < 2003 ? 'film' : 'other';
@@ -44,136 +67,325 @@
     if (/powershot|ixus|coolpix|cybershot|cyber-shot|dsc|stylus|finepix|dimage|optio|lumix|vlux|easyshare|photosmart|mavica|exilim|handycam|photopc|kodak|polaroid|benq|seiko|olympus|general imaging|traveler/.test(value)) return 'compact';
     return year < 2003 ? 'film' : 'other';
   }
-  function setLabel(year) { labelText.textContent = year ? '09.03.' + year : 'ALL PHOTOS'; }
+  
   function activateRing(ring, year) {
     if (highlightedRing && highlightedRing !== ring) highlightedRing.classList.remove('is-highlighted');
-    highlightedRing = ring; ring.classList.add('is-highlighted'); setLabel(year);
+    highlightedRing = ring;
+    ring.classList.add('is-highlighted');
   }
+
   function clearRing(ring) {
     if (ring && highlightedRing !== ring) return;
     if (highlightedRing) highlightedRing.classList.remove('is-highlighted');
-    highlightedRing = null; setLabel(null);
+    highlightedRing = null;
   }
-  function positionPreview(event) {
-    preview.style.left = clamp(event.clientX + 18, 12, window.innerWidth - 202) + 'px';
-    preview.style.top = clamp(event.clientY + 18, 12, window.innerHeight - 222) + 'px';
+
+  function positionPreview(point) {
+    lastPointer = point;
+    // Measure the preview's actual rendered size — it now varies with
+    // the photo's aspect, so the old hard-coded 202 / 222 constants
+    // would clamp wrong for tall or wide previews.
+    const w = preview.offsetWidth  || (CONFIG.previewWidth + 12);
+    const h = preview.offsetHeight || (CONFIG.previewWidth + 12);
+    preview.style.left = clamp(point.x + 18, 12, window.innerWidth  - w - 12) + 'px';
+    preview.style.top  = clamp(point.y + 18, 12, window.innerHeight - h - 12) + 'px';
   }
+
   function showPreview(photo, year, ring, event) {
-    activateRing(ring, year); previewImage.src = 'photos/' + encodeURIComponent(photo.file);
-    previewImage.alt = photo.file + ' (' + year + ')'; previewText.textContent = '09.03.' + year;
-    if (event) positionPreview(event); preview.classList.add('is-visible');
+    activateRing(ring, year);
+    previewText.textContent = '09.03.' + year;
+    previewImage.src = 'photos/' + encodeURIComponent(photo.file);
+    previewImage.alt = photo.file + ' (' + year + ')';
+    if (event) positionPreview({ x: event.clientX, y: event.clientY });
+    preview.classList.add('is-visible');
+
+    // Size the preview to the photo's real aspect, clamped to the same
+    // range the tunnel uses so portraits and landscapes look right
+    // without extreme panoramas blowing up the box.
+    const applyAspect = () => {
+      const w = previewImage.naturalWidth;
+      const h = previewImage.naturalHeight;
+      if (!w || !h) return;
+      const aspect = clamp(w / h, CONFIG.previewMinAspect, CONFIG.previewMaxAspect);
+      previewImage.style.height = Math.round(CONFIG.previewWidth / aspect) + 'px';
+      // Re-clamp position in case the new size pushed it off-screen.
+      if (lastPointer) positionPreview(lastPointer);
+    };
+
+    if (previewImage.complete && previewImage.naturalWidth) {
+      applyAspect();
+    } else {
+      // Square while loading, then snap to the true aspect.
+      previewImage.style.height = CONFIG.previewWidth + 'px';
+      previewImage.addEventListener('load', applyAspect, { once: true });
+    }
   }
+
   function leaveRing(ring, event) {
     if (ring.contains(event.relatedTarget)) return;
-    preview.classList.remove('is-visible'); clearRing(ring);
+    preview.classList.remove('is-visible');
+    clearRing(ring);
   }
+
+  let flying = false, flightId = 0;
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+  function flyTo(targetWorldX, targetWorldY, targetScale, duration) {
+    const startTx = view.tx, startTy = view.ty, startScale = view.scale;
+    const targetTx = -targetWorldX * baseScale * targetScale;
+    const targetTy = -targetWorldY * baseScale * targetScale;
+    const startTime = performance.now();
+    const thisFlight = ++flightId;
+    flying = true;
+    (function step(now) {
+      if (thisFlight !== flightId) return;
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = easeInOutCubic(t);
+      view.tx = startTx + (targetTx - startTx) * eased;
+      view.ty = startTy + (targetTy - startTy) * eased;
+      view.scale = startScale + (targetScale - startScale) * eased;
+      applyView();
+      if (t < 1) requestAnimationFrame(step);
+      else flying = false;
+    })(startTime);
+  }
+  function scaleForGroup(group) {
+    const raw = CONFIG.deviceFocusFillPx / (group.radius * baseScale);
+    return clamp(raw, CONFIG.deviceFocusMinScale, CONFIG.deviceFocusMaxScale);
+  }
+  
   function updateDeviceFocus() {
-    if (layout !== 'device' || !deviceGroups.length) return;
+    if (!deviceGroups.length || flying) return;
+    if (view.scale <= minimumScale() + 0.05) {
+      activeDeviceIndex = deviceGroups.length;
+      deviceName.textContent = 'All';
+      setRevealedGroup(null);
+      return;
+    }
     const localX = -view.tx / (baseScale * view.scale);
     const localY = -view.ty / (baseScale * view.scale);
     let closest = 0, closestDistance = Infinity;
     deviceGroups.forEach((group, index) => {
       const distance = Math.hypot(localX - group.x, localY - group.y);
-      if (distance < closestDistance) { closestDistance = distance; closest = index; }
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closest = index;
+      }
     });
+    setRevealedGroup(deviceGroups[closest].id);
     activeDeviceIndex = closest;
     deviceName.textContent = deviceGroups[closest].label;
   }
+
+  // Reveals the focused group's photos and hides everyone else's.
+  // Image srcs are assigned lazily the first time a group is revealed,
+  // and never cleared — so re-visiting a group is instant.
+  function setRevealedGroup(groupId) {
+    if (groupId === revealedGroupId) return;
+
+    stage.querySelectorAll('.flat-photo-v2.is-revealed').forEach(el => {
+      el.classList.remove('is-revealed');
+    });
+
+    if (groupId) {
+      stage.querySelectorAll('.flat-photo-v2[data-group="' + groupId + '"]').forEach(el => {
+        el.classList.add('is-revealed');
+        const img = el.firstElementChild;
+        if (img && !img.src && img.dataset.src) {
+          img.src = img.dataset.src;
+        }
+      });
+    }
+
+    revealedGroupId = groupId;
+  }
+
   function focusDevice(index) {
     if (!deviceGroups.length) return;
-    activeDeviceIndex = (index + deviceGroups.length) % deviceGroups.length;
+    const totalStops = deviceGroups.length + 1;   // +1 for the zoomed-out "All" stop
+    activeDeviceIndex = ((index % totalStops) + totalStops) % totalStops;
+    if (activeDeviceIndex === deviceGroups.length) {
+      deviceName.textContent = 'All';
+      setRevealedGroup(null);
+      flyTo(0, 0, minimumScale(), CONFIG.flightDurationMs);
+      return;
+    }
     const group = deviceGroups[activeDeviceIndex];
-    view.scale = Math.max(view.scale, 1);
-    view.tx = -group.x * baseScale * view.scale;
-    view.ty = -group.y * baseScale * view.scale;
-    clampView(); applyView();
+    deviceName.textContent = group.label;
+    setRevealedGroup(group.id);
+    flyTo(group.x, group.y, scaleForGroup(group), CONFIG.flightDurationMs);
   }
 
   function buildControls() {
-    const filters = document.createElement('div'); filters.id = 'flat-filters-v2';
-    CATEGORIES.forEach(([id, text]) => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'flat-chip-v2'; button.dataset.category = id; button.textContent = text;
-      button.addEventListener('click', event => { event.stopPropagation(); activeFilter = id; applyFilter(); });
-      filters.appendChild(button); chips.push(button);
+    previousDeviceButton.addEventListener('click', event => {
+      event.stopPropagation();
+      focusDevice(activeDeviceIndex - 1);
     });
-    layoutToggle.addEventListener('click', event => {
-      event.stopPropagation(); layout = layout === 'all' ? 'device' : 'all'; activeFilter = 'all';
-      layoutToggle.textContent = layout === 'all' ? 'Device groups' : 'All photos'; layoutToggle.setAttribute('aria-pressed', String(layout === 'device'));
-      buildView();
-      resetView();
+    nextDeviceButton.addEventListener('click', event => {
+      event.stopPropagation();
+      focusDevice(activeDeviceIndex + 1);
     });
-    previousDeviceButton.addEventListener('click', event => { event.stopPropagation(); focusDevice(activeDeviceIndex - 1); });
-    nextDeviceButton.addEventListener('click', event => { event.stopPropagation(); focusDevice(activeDeviceIndex + 1); });
-    viewport.append(filters, layoutToggle, label, preview, deviceNav);
+    viewport.append(label, preview, deviceNav);
   }
 
-  function addRing(parent, entry, yearIndex, radius, centerX, centerY, rotationOffset) {
-    const ring = document.createElement('div'); ring.className = 'flat-ring-v2'; ring.dataset.year = entry.year;
+  // Per-ring start angle. Stable within a session, fresh on reload.
+  // Keyed by group+year so the same year in two different device
+  // clusters doesn't accidentally inherit the same offset.
+  function ringOffset(groupId, year) {
+    const key = groupId + '|' + year;
+    if (!sessionOffsets.has(key)) {
+      sessionOffsets.set(key, Math.random() * 360);
+    }
+    return sessionOffsets.get(key);
+  }
+
+    function addRing(parent, entry, yearIndex, radius, centerX, centerY, rotationOffset, groupId) {
+    const ring = document.createElement('div');
+    ring.className = 'flat-ring-v2';
+    ring.dataset.year = entry.year;
     ring.style.transform = 'translate(' + centerX + 'px,' + centerY + 'px)';
-    ring.style.setProperty('--ring-offset', -radius + 'px'); ring.style.setProperty('--ring-diameter', radius * 2 + 'px');
+
     const hit = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    hit.classList.add('flat-ring-hit-v2'); hit.setAttribute('viewBox', '0 0 ' + (radius * 2 + 20) + ' ' + (radius * 2 + 20));
-    hit.style.width = radius * 2 + 20 + 'px'; hit.style.height = radius * 2 + 20 + 'px'; hit.style.marginLeft = -radius - 10 + 'px'; hit.style.marginTop = -radius - 10 + 'px';
+    hit.classList.add('flat-ring-hit-v2');
+    hit.setAttribute('viewBox', '0 0 ' + (radius * 2 + 20) + ' ' + (radius * 2 + 20));
+    hit.style.width = radius * 2 + 20 + 'px';
+    hit.style.height = radius * 2 + 20 + 'px';
+    hit.style.marginLeft = -radius - 10 + 'px';
+    hit.style.marginTop = -radius - 10 + 'px';
+
+    // Visible outline with a gap at the bottom where the year label sits.
+    // Font size scales gently with ring radius so the innermost and
+    // outermost rings look proportionally consistent.
+    const yearText = String(entry.year);
+    const yearFontSize = 44;
+    const estimatedLabelWidth = yearText.length * yearFontSize * 0.6 + 28;
+    const gapWidth = estimatedLabelWidth + 6;
+    const circumference = 2 * Math.PI * radius;
+    const gapAngle = (gapWidth / circumference) * 360;
+
+    const outline = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    outline.classList.add('flat-ring-outline-v2');
+    outline.setAttribute('cx', radius + 10);
+    outline.setAttribute('cy', radius + 10);
+    outline.setAttribute('r', radius);
+    outline.setAttribute('stroke-dasharray', (circumference - gapWidth) + ' ' + gapWidth);
+    // Dash pattern starts at 3 o'clock; shift so the gap lands centered
+    // on 6 o'clock (bottom of the ring) where the year label sits.
+    outline.setAttribute('stroke-dashoffset', String(circumference * (0.75 - gapAngle / 720)));
+    hit.appendChild(outline);
+
     const hitCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    hitCircle.setAttribute('cx', radius + 10); hitCircle.setAttribute('cy', radius + 10); hitCircle.setAttribute('r', radius);
+    hitCircle.classList.add('flat-ring-hit-circle-v2');
+    hitCircle.setAttribute('cx', radius + 10);
+    hitCircle.setAttribute('cy', radius + 10);
+    hitCircle.setAttribute('r', radius);
     hitCircle.addEventListener('pointerenter', () => activateRing(ring, entry.year));
     hitCircle.addEventListener('pointerleave', event => leaveRing(ring, event));
-    hit.appendChild(hitCircle); ring.appendChild(hit);
+    hit.appendChild(hitCircle);
+    ring.appendChild(hit);
+
+    // Year label straddles the gap at the bottom of the ring. The
+    // black background covers the whole span of the gap so a passing
+    // tile doesn't punch through the year while it rotates by.
+    const yearLabel = document.createElement('div');
+    yearLabel.className = 'flat-year-label-v2';
+    yearLabel.textContent = yearText;
+    yearLabel.style.top = radius + 'px';
+    yearLabel.style.fontSize = yearFontSize + 'px';
+    ring.appendChild(yearLabel);
+
+
+
     const tileSize = clamp(CONFIG.design * CONFIG.photoFraction, CONFIG.photoMin, CONFIG.photoMax);
+    const tileData = [];
     entry.photos.forEach((photo, photoIndex) => {
-      const tile = document.createElement('button'); tile.type = 'button'; tile.className = 'flat-photo-v2';
-      tile.dataset.category = classifyDevice(photo.device, entry.year); tile.style.width = tileSize + 'px'; tile.style.height = tileSize + 'px';
-      tile.style.marginLeft = -tileSize / 2 + 'px'; tile.style.marginTop = -tileSize / 2 + 'px'; tile.style.backgroundColor = photo.hex || '#c9c9c9';
-      const angle = 360 / entry.photos.length * photoIndex + rotationOffset + yearIndex * CONFIG.rotation;
-      tile.style.transform = 'rotate(' + angle + 'deg) translateY(' + -radius + 'px)'; tile.setAttribute('aria-label', photo.file + ', September 3, ' + entry.year);
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'flat-photo-v2';
+      tile.dataset.category = classifyDevice(photo.device, entry.year);
+      tile.style.width = tileSize + 'px';
+      tile.style.height = tileSize + 'px';
+      tile.style.marginLeft = -tileSize / 2 + 'px';
+      tile.style.marginTop = -tileSize / 2 + 'px';
+      
+      tile.style.backgroundColor = photo.hex || '#c9c9c9';
+      tile.dataset.group = groupId;
+
+      const img = document.createElement('img');
+      img.alt = '';
+      img.dataset.src = 'photos/' + encodeURIComponent(photo.file);
+      tile.appendChild(img);
+
+      const angle = 360 / entry.photos.length * photoIndex + rotationOffset;
+
+      tile.style.transform = 'rotate(' + angle + 'deg) translateY(' + -radius + 'px)';
+      tile.setAttribute('aria-label', photo.file + ', September 3, ' + entry.year);
       tile.addEventListener('pointerenter', event => showPreview(photo, entry.year, ring, event));
-      tile.addEventListener('pointermove', positionPreview); tile.addEventListener('pointerleave', event => leaveRing(ring, event));
+      
+      tile.addEventListener('pointermove', event => positionPreview({ x: event.clientX, y: event.clientY }));
+      
+
+      tile.addEventListener('pointerleave', event => leaveRing(ring, event));
       tile.addEventListener('focus', () => showPreview(photo, entry.year, ring));
-      tile.addEventListener('blur', () => { preview.classList.remove('is-visible'); clearRing(ring); }); ring.appendChild(tile);
+      tile.addEventListener('blur', () => {
+        preview.classList.remove('is-visible');
+        clearRing(ring);
+      });
+      ring.appendChild(tile);
+      tileData.push({ el: tile, baseAngle: angle });
+    });
+    ringSpinners.push({
+      tiles: tileData,
+      radius,
+      direction: yearIndex % 2 === 0 ? 1 : -1,
+      spin: 0,
     });
     parent.appendChild(ring);
   }
-  function buildAllPhotos() {
-    deviceGroups = []; activeDeviceIndex = -1;
-    const chronological = [...years].sort((a, b) => a.year - b.year), inner = CONFIG.design * CONFIG.allInner, outer = CONFIG.design * CONFIG.allOuter;
-    const spacing = (outer - inner) / Math.max(1, chronological.length - 1);
-    chronological.forEach((entry, index) => addRing(stage, entry, index, inner + index * spacing, 0, 0, 0)); contentBounds = { x: outer, y: outer };
-  }
+
   function packDeviceCircles(groups) {
-    // Force-based circle packing: circles start seeded along a golden-
-    // angle spiral (bigger ones closer to center), then repeatedly
-    // resolve pairwise overlaps while a gentle pull toward the origin
-    // lets everything settle into a tight, organic cluster — bubbles
-    // nestling together rather than rigid grid rows. Trivial cost for
-    // the handful of device categories involved (O(n^2) per iteration,
-    // n <= 7), so this runs instantly.
+    // Force-based packing: golden-angle spiral seed, then resolve
+    // overlaps while an anisotropic pull settles everything into a
+    // wide organic cluster (X barely reined in, Y pulled in harder).
     const n = groups.length;
     groups.forEach((g, i) => {
-      const angle = i * 2.399963; // golden angle, spreads seeds evenly
+      const angle = i * 2.399963;
       const spiralR = Math.sqrt(i + 1) * (g.radius * 0.7 + 50);
-      g.x = Math.cos(angle) * spiralR; g.y = Math.sin(angle) * spiralR;
+      g.x = Math.cos(angle) * spiralR;
+      g.y = Math.sin(angle) * spiralR;
     });
     for (let iter = 0; iter < CONFIG.packIterations; iter++) {
-      groups.forEach(g => { g.x *= 0.994; g.y *= 0.994; });
+      groups.forEach(g => {
+        g.x *= CONFIG.packPullX;
+        g.y *= CONFIG.packPullY;
+      });
       for (let i = 0; i < n; i++) {
         for (let j = i + 1; j < n; j++) {
           const a = groups[i], b = groups[j];
-          const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 0.01;
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 0.01;
           const minDist = a.radius + b.radius + CONFIG.packPaddingPx;
           if (dist < minDist) {
-            const overlap = (minDist - dist) / 2, nx = dx / dist, ny = dy / dist;
-            a.x -= nx * overlap; a.y -= ny * overlap; b.x += nx * overlap; b.y += ny * overlap;
+            const overlap = (minDist - dist) / 2;
+            const nx = dx / dist, ny = dy / dist;
+            a.x -= nx * overlap; a.y -= ny * overlap;
+            b.x += nx * overlap; b.y += ny * overlap;
           }
         }
       }
     }
   }
+
   function buildDeviceGroups() {
-    deviceGroups = []; activeDeviceIndex = -1;
-    const groups = CATEGORIES.slice(1).map(([id, label], order) => ({ id, label, order, byYear: new Map() })), groupById = new Map(groups.map(group => [group.id, group]));
+    deviceGroups = [];
+    activeDeviceIndex = -1;
+    const groups = CATEGORIES.map(([id, label], order) => ({ id, label, order, byYear: new Map() }));
+    const groupById = new Map(groups.map(group => [group.id, group]));
     years.forEach(entry => entry.photos.forEach(photo => {
       const group = groupById.get(classifyDevice(photo.device, entry.year));
-      if (!group.byYear.has(entry.year)) group.byYear.set(entry.year, []); group.byYear.get(entry.year).push(photo);
+      if (!group.byYear.has(entry.year)) group.byYear.set(entry.year, []);
+      group.byYear.get(entry.year).push(photo);
     }));
     const chronologicalAll = [...years].sort((a, b) => a.year - b.year);
     const ringGap = CONFIG.design * (CONFIG.allOuter - CONFIG.allInner) / Math.max(1, chronologicalAll.length - 1);
@@ -186,83 +398,194 @@
     let maxX = 0, maxY = 0;
     active.forEach(group => {
       const { x, y, radius, label } = group;
-      const deviceLabel = document.createElement('div'); deviceLabel.className = 'flat-device-label-v2'; deviceLabel.textContent = label;
-      deviceLabel.style.transform = 'translate(' + x + 'px,' + (y - radius - 95) + 'px)'; stage.appendChild(deviceLabel);
-      group.chronological.forEach(([year, photos], yearIndex) => addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, group.radius));
+      const deviceLabel = document.createElement('div');
+      deviceLabel.className = 'flat-device-label-v2';
+      deviceLabel.textContent = label;
+      deviceLabel.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+      stage.appendChild(deviceLabel);
+            
+      group.chronological.forEach(([year, photos], yearIndex) => {
+        addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, ringOffset(group.id, year), group.id);
+      });
+
       deviceGroups.push({ id: group.id, label: group.label, order: group.order, x, y, radius: group.radius });
-      maxX = Math.max(maxX, Math.abs(x) + radius); maxY = Math.max(maxY, Math.abs(y) + radius + 130);
+      maxX = Math.max(maxX, Math.abs(x) + radius);
+      maxY = Math.max(maxY, Math.abs(y) + radius + 130);
     });
     deviceGroups.sort((a, b) => a.order - b.order);
     contentBounds = { x: maxX, y: maxY };
-    // Whichever group ended up closest to the cluster's own center is
-    // "home" — what we focus on first when entering device-layout mode.
-    let closest = 0, closestDistance = Infinity;
-    deviceGroups.forEach((g, index) => {
-      const distance = Math.hypot(g.x, g.y);
-      if (distance < closestDistance) { closestDistance = distance; closest = index; }
-    });
-    homeDeviceIndex = closest;
+    
+    // Film is always the startup group, regardless of where the
+    // packing algorithm happened to settle it.
+    const filmIndex = deviceGroups.findIndex(g => g.id === 'film');
+    homeDeviceIndex = filmIndex >= 0 ? filmIndex : 0;
   }
+
   function buildView() {
-    stage.replaceChildren(); if (!years.length) return;
-    viewport.classList.toggle('is-device-layout', layout === 'device'); baseScale = Math.min(window.innerWidth, window.innerHeight) / CONFIG.design;
-    if (layout === 'device') buildDeviceGroups(); else buildAllPhotos(); clampView(); applyView(); applyFilter();
+    stage.replaceChildren();
+    ringSpinners = [];
+    revealedGroupId = null;
+    if (!years.length) return;
+    baseScale = Math.min(window.innerWidth, window.innerHeight) / CONFIG.design;
+    buildDeviceGroups();
+    clampView();
+    applyView();
   }
-  function applyFilter() {
-    chips.forEach(chip => chip.classList.toggle('is-active', chip.dataset.category === activeFilter));
-    stage.querySelectorAll('.flat-photo-v2').forEach(tile => tile.classList.toggle('is-dimmed', layout === 'all' && activeFilter !== 'all' && tile.dataset.category !== activeFilter));
+
+  function minimumScale() { return CONFIG.deviceMinScale; }
+  function applyView() {
+    stage.style.transform = 'translate(' + view.tx + 'px,' + view.ty + 'px) scale(' + baseScale * view.scale + ')';
+    updateDeviceFocus();
   }
-  function minimumScale() { return layout === 'device' ? CONFIG.deviceMinScale : CONFIG.allMinScale; }
-  function applyView() { stage.style.transform = 'translate(' + view.tx + 'px,' + view.ty + 'px) scale(' + baseScale * view.scale + ')'; updateDeviceFocus(); }
+
+  function spinLoop(now) {
+    const dt = Math.min((now - lastSpinTime) / 1000, 0.1);
+    lastSpinTime = now;
+    if (isFlat) {
+      ringSpinners.forEach(spinner => {
+        spinner.spin += CONFIG.spinDegPerSecond * spinner.direction * dt;
+        spinner.tiles.forEach(({ el, baseAngle }) => {
+          el.style.transform =
+            'rotate(' + (baseAngle + spinner.spin) + 'deg)' +
+            ' translateY(' + -spinner.radius + 'px)';
+        });
+      });
+    }
+    requestAnimationFrame(spinLoop);
+  }
+
   function clampView() {
-    const minScale = minimumScale();
-    view.scale = clamp(view.scale, minScale, CONFIG.maxScale);
-    if (layout === 'all' && view.scale === minScale) { view.tx = 0; view.ty = 0; return; }
-    const panBaseScale = layout === 'device' ? CONFIG.devicePanBaseScale : CONFIG.allMinScale;
-    const travelX = layout === 'device' ? contentBounds.x * baseScale * view.scale : Math.max(0, contentBounds.x * baseScale * (view.scale - panBaseScale));
-    const travelY = layout === 'device' ? contentBounds.y * baseScale * view.scale : Math.max(0, contentBounds.y * baseScale * (view.scale - panBaseScale));
-    view.tx = clamp(view.tx, -travelX, travelX); view.ty = clamp(view.ty, -travelY, travelY);
+    view.scale = clamp(view.scale, minimumScale(), CONFIG.maxScale);
+    const travelX = contentBounds.x * baseScale * view.scale;
+    const travelY = contentBounds.y * baseScale * view.scale;
+    view.tx = clamp(view.tx, -travelX, travelX);
+    view.ty = clamp(view.ty, -travelY, travelY);
   }
   function resetView() {
-    if (layout === 'device' && deviceGroups.length) { view.scale = 1; focusDevice(homeDeviceIndex); return; }
-    view.scale = layout === 'device' ? 1 : CONFIG.allMinScale; view.tx = 0; view.ty = 0; applyView();
+    if (deviceGroups.length) focusDevice(homeDeviceIndex);
   }
-  function pairMetrics() { const [one, two] = Array.from(pointers.values()); return { x: (one.x + two.x) / 2, y: (one.y + two.y) / 2, distance: Math.hypot(two.x - one.x, two.y - one.y) || 1 }; }
-  function beginMulti() { const metric = pairMetrics(); gesture = { type: 'multi', ...metric, scale: view.scale, tx: view.tx, ty: view.ty }; viewport.classList.add('is-dragging'); }
+
+  function pairMetrics() {
+    const [one, two] = Array.from(pointers.values());
+    return {
+      x: (one.x + two.x) / 2,
+      y: (one.y + two.y) / 2,
+      distance: Math.hypot(two.x - one.x, two.y - one.y) || 1,
+    };
+  }
+  function beginMulti() {
+    const metric = pairMetrics();
+    gesture = { type: 'multi', ...metric, scale: view.scale, tx: view.tx, ty: view.ty };
+    viewport.classList.add('is-dragging');
+  }
   function onPointerDown(event) {
-    if (!isFlat || event.target.closest('#flat-filters-v2, #flat-layout-toggle-v2')) return;
-    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY }); try { viewport.setPointerCapture(event.pointerId); } catch (_) {}
-    if (pointers.size === 1) { gesture = { type: 'single', id: event.pointerId, x: event.clientX, y: event.clientY, tx: view.tx, ty: view.ty }; viewport.classList.add('is-dragging'); } else beginMulti();
+    if (!isFlat || event.target.closest('#flat-device-nav-v2')) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    try { viewport.setPointerCapture(event.pointerId); } catch (_) {}
+    if (pointers.size === 1) {
+      gesture = { type: 'single', id: event.pointerId, x: event.clientX, y: event.clientY, tx: view.tx, ty: view.ty };
+      viewport.classList.add('is-dragging');
+    } else beginMulti();
   }
   function onPointerMove(event) {
-    if (!pointers.has(event.pointerId)) return; pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    if (gesture && gesture.type === 'single' && gesture.id === event.pointerId) { view.tx = gesture.tx + event.clientX - gesture.x; view.ty = gesture.ty + event.clientY - gesture.y; }
-    else if (gesture && gesture.type === 'multi' && pointers.size >= 2) {
-      const metric = pairMetrics(), nextScale = clamp(gesture.scale * metric.distance / gesture.distance, minimumScale(), CONFIG.maxScale), ratio = nextScale / gesture.scale;
-      view.scale = nextScale; view.tx = metric.x - (gesture.x - gesture.tx) * ratio; view.ty = metric.y - (gesture.y - gesture.ty) * ratio;
+    if (!pointers.has(event.pointerId)) return;
+    pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (gesture && gesture.type === 'single' && gesture.id === event.pointerId) {
+      view.tx = gesture.tx + event.clientX - gesture.x;
+      view.ty = gesture.ty + event.clientY - gesture.y;
+    } else if (gesture && gesture.type === 'multi' && pointers.size >= 2) {
+      const metric = pairMetrics();
+      const nextScale = clamp(gesture.scale * metric.distance / gesture.distance, minimumScale(), CONFIG.maxScale);
+      const ratio = nextScale / gesture.scale;
+      view.scale = nextScale;
+      view.tx = metric.x - (gesture.x - gesture.tx) * ratio;
+      view.ty = metric.y - (gesture.y - gesture.ty) * ratio;
     } else return;
-    clampView(); applyView();
+    clampView();
+    applyView();
   }
   function onPointerUp(event) {
-    if (!pointers.has(event.pointerId)) return; pointers.delete(event.pointerId); try { viewport.releasePointerCapture(event.pointerId); } catch (_) {}
-    if (pointers.size === 1) { const [id, point] = Array.from(pointers.entries())[0]; gesture = { type: 'single', id, x: point.x, y: point.y, tx: view.tx, ty: view.ty }; }
-    else { gesture = null; viewport.classList.remove('is-dragging'); }
+    if (!pointers.has(event.pointerId)) return;
+    pointers.delete(event.pointerId);
+    try { viewport.releasePointerCapture(event.pointerId); } catch (_) {}
+    if (pointers.size === 1) {
+      const [id, point] = Array.from(pointers.entries())[0];
+      gesture = { type: 'single', id, x: point.x, y: point.y, tx: view.tx, ty: view.ty };
+    } else {
+      gesture = null;
+      viewport.classList.remove('is-dragging');
+    }
   }
   function onWheel(event) {
-    if (!isFlat) return; event.preventDefault(); const intensity = event.ctrlKey ? CONFIG.pinchIntensity : CONFIG.wheelIntensity;
-    const nextScale = clamp(view.scale * Math.exp(-event.deltaY * intensity), minimumScale(), CONFIG.maxScale), ratio = nextScale / view.scale, x = event.clientX - window.innerWidth / 2, y = event.clientY - window.innerHeight / 2;
-    view.tx = x - (x - view.tx) * ratio; view.ty = y - (y - view.ty) * ratio; view.scale = nextScale; clampView(); applyView();
+    if (!isFlat) return;
+    event.preventDefault();
+    const intensity = event.ctrlKey ? CONFIG.pinchIntensity : CONFIG.wheelIntensity;
+    const nextScale = clamp(view.scale * Math.exp(-event.deltaY * intensity), minimumScale(), CONFIG.maxScale);
+    const ratio = nextScale / view.scale;
+    const x = event.clientX - window.innerWidth / 2;
+    const y = event.clientY - window.innerHeight / 2;
+    view.tx = x - (x - view.tx) * ratio;
+    view.ty = y - (y - view.ty) * ratio;
+    view.scale = nextScale;
+    clampView();
+    applyView();
   }
+
   function enterFlat() {
-    if (isFlat) return; savedScrollY = window.scrollY; document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden'; document.body.classList.add('mode-flat'); viewport.setAttribute('aria-hidden','false'); modeToggle.textContent = 'Tunnel'; modeToggle.setAttribute('aria-pressed','true'); isFlat = true;
+    if (isFlat) return;
+    savedScrollY = window.scrollY;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('mode-flat');
+    viewport.setAttribute('aria-hidden', 'false');
+    modeToggle.textContent = 'Tunnel';
+    modeToggle.setAttribute('aria-pressed', 'true');
+    isFlat = true;
     buildView();
     resetView();
   }
   function exitFlat() {
-    if (!isFlat) return; pointers.clear(); gesture = null; preview.classList.remove('is-visible'); clearRing(); viewport.classList.remove('is-dragging'); document.body.classList.remove('mode-flat'); viewport.setAttribute('aria-hidden','true'); document.documentElement.style.overflow = ''; document.body.style.overflow = ''; window.scrollTo(0,savedScrollY); modeToggle.textContent = 'Flat'; modeToggle.setAttribute('aria-pressed','false'); isFlat = false;
+    if (!isFlat) return;
+    pointers.clear();
+    gesture = null;
+    lastPointer = null;
+    preview.classList.remove('is-visible');
+    clearRing();
+    viewport.classList.remove('is-dragging');
+    document.body.classList.remove('mode-flat');
+    viewport.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, savedScrollY);
+    modeToggle.textContent = 'Flat';
+    modeToggle.setAttribute('aria-pressed', 'false');
+    isFlat = false;
   }
+
   modeToggle.addEventListener('click', () => isFlat ? exitFlat() : enterFlat());
-  viewport.addEventListener('wheel', onWheel, { passive: false }); viewport.addEventListener('pointerdown', onPointerDown); viewport.addEventListener('pointermove', onPointerMove); viewport.addEventListener('pointerup', onPointerUp); viewport.addEventListener('pointercancel', onPointerUp);
-  viewport.addEventListener('pointerleave', event => { if (!pointers.size && !event.relatedTarget) { preview.classList.remove('is-visible'); clearRing(); } }); viewport.addEventListener('dblclick', () => { if (isFlat) resetView(); }); window.addEventListener('resize', () => { if (isFlat) buildView(); });
-  buildControls(); fetch('data/dataset.json').then(response => response.json()).then(data => { years = data.years; if (isFlat) buildView(); }).catch(error => console.warn('[flat-v2.js] Could not load dataset.json:', error));
+  viewport.addEventListener('wheel', onWheel, { passive: false });
+  viewport.addEventListener('pointerdown', onPointerDown);
+  viewport.addEventListener('pointermove', onPointerMove);
+  viewport.addEventListener('pointerup', onPointerUp);
+  viewport.addEventListener('pointercancel', onPointerUp);
+  viewport.addEventListener('pointerleave', event => {
+    if (!pointers.size && !event.relatedTarget) {
+      preview.classList.remove('is-visible');
+      clearRing();
+    }
+  });
+  viewport.addEventListener('dblclick', () => { if (isFlat) resetView(); });
+  window.addEventListener('resize', () => { if (isFlat) buildView(); });
+
+  lastSpinTime = performance.now();
+  requestAnimationFrame(spinLoop);
+
+  buildControls();
+  fetch('data/dataset.json')
+    .then(response => response.json())
+    .then(data => {
+      years = data.years;
+      if (isFlat) buildView();
+    })
+    .catch(error => console.warn('[flat-v2.js] Could not load dataset.json:', error));
 }());

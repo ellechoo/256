@@ -7,13 +7,21 @@
   if (!viewport || !stage || !modeToggle) return;
 
   const CONFIG = {
-    design: 6000, allInner: .05, allOuter: .46, groupPadding: 260,
+    design: 6000, allInner: .05, allOuter: .46, packPaddingPx: 110, packIterations: 420,
+    packPullX: .997, packPullY: .984,
+    // Size-aware focus zoom: instead of one flat zoom level, aim for
+    // each group's circle to fill roughly this many screen px of
+    // radius when focused — bigger groups (bigger radius) therefore
+    // need a LOWER scale to hit that same fill target, smaller groups
+    // need a HIGHER scale. Clamped so neither extreme goes silly.
+    deviceFocusFillPx: 400, deviceFocusMinScale: 1.3, deviceFocusMaxScale: 4.2,
+    flightDurationMs: 800,
     photoFraction: .012, photoMin: 60, photoMax: 180, allMinScale: 1, deviceMinScale: .55, devicePanBaseScale: .6, maxScale: 8,
     wheelIntensity: .002, pinchIntensity: .010, rotation: 137.50776405003785,
   };
   const CATEGORIES = [['all','All'],['film','Film'],['compact','Compact'],['dslr','DSLR'],['mirrorless','Mirrorless'],['phone','Phone'],['pro','Pro'],['other','Other']];
   let years = [], isFlat = false, savedScrollY = 0, baseScale = 1, contentBounds = { x: 0, y: 0 };
-  let activeFilter = 'all', layout = 'all', highlightedRing = null, gesture = null, activeDeviceIndex = -1;
+  let activeFilter = 'all', layout = 'all', highlightedRing = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
   let deviceGroups = [];
   const chips = [], pointers = new Map(), view = { scale: 1, tx: 0, ty: 0 };
 
@@ -67,8 +75,40 @@
     if (ring.contains(event.relatedTarget)) return;
     preview.classList.remove('is-visible'); clearRing(ring);
   }
+  let flying = false, flightId = 0;
+  function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  // Animated transition from the current view to a target world-space
+  // point + scale — this is what makes switching groups feel like
+  // flying across the composition instead of jump-cutting to it.
+  function flyTo(targetWorldX, targetWorldY, targetScale, duration) {
+    const startTx = view.tx, startTy = view.ty, startScale = view.scale;
+    const targetTx = -targetWorldX * baseScale * targetScale;
+    const targetTy = -targetWorldY * baseScale * targetScale;
+    const startTime = performance.now();
+    const thisFlight = ++flightId;
+    flying = true;
+    (function step(now) {
+      if (thisFlight !== flightId) return; // a newer flight superseded this one
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = easeInOutCubic(t);
+      view.tx = startTx + (targetTx - startTx) * eased;
+      view.ty = startTy + (targetTy - startTy) * eased;
+      view.scale = startScale + (targetScale - startScale) * eased;
+      applyView();
+      if (t < 1) requestAnimationFrame(step); else flying = false;
+    })(startTime);
+  }
+  // Bigger circle -> lower scale (zoom out a touch, so more of it is
+  // visible at once); smaller circle -> higher scale (zoom in more,
+  // since there's less content to show). Aims for each group's circle
+  // to fill roughly CONFIG.deviceFocusFillPx screen px of radius.
+  function scaleForGroup(group) {
+    const raw = CONFIG.deviceFocusFillPx / (group.radius * baseScale);
+    return clamp(raw, CONFIG.deviceFocusMinScale, CONFIG.deviceFocusMaxScale);
+  }
   function updateDeviceFocus() {
-    if (layout !== 'device' || !deviceGroups.length) return;
+    if (layout !== 'device' || !deviceGroups.length || flying) return; // during a scripted flight, the label already shows the destination — don't flicker through whatever's nearest mid-flight
+    if (view.scale <= minimumScale() + 0.05) { activeDeviceIndex = deviceGroups.length; deviceName.textContent = 'All'; return; }
     const localX = -view.tx / (baseScale * view.scale);
     const localY = -view.ty / (baseScale * view.scale);
     let closest = 0, closestDistance = Infinity;
@@ -81,12 +121,16 @@
   }
   function focusDevice(index) {
     if (!deviceGroups.length) return;
-    activeDeviceIndex = (index + deviceGroups.length) % deviceGroups.length;
+    const totalStops = deviceGroups.length + 1; // +1 for the "All" stop
+    activeDeviceIndex = ((index % totalStops) + totalStops) % totalStops;
+    if (activeDeviceIndex === deviceGroups.length) {
+      deviceName.textContent = 'All';
+      flyTo(0, 0, minimumScale(), CONFIG.flightDurationMs);
+      return;
+    }
     const group = deviceGroups[activeDeviceIndex];
-    view.scale = Math.max(view.scale, 1);
-    view.tx = -group.x * baseScale * view.scale;
-    view.ty = -group.y * baseScale * view.scale;
-    clampView(); applyView();
+    deviceName.textContent = group.label;
+    flyTo(group.x, group.y, scaleForGroup(group), CONFIG.flightDurationMs);
   }
 
   function buildControls() {
@@ -99,7 +143,8 @@
     layoutToggle.addEventListener('click', event => {
       event.stopPropagation(); layout = layout === 'all' ? 'device' : 'all'; activeFilter = 'all';
       layoutToggle.textContent = layout === 'all' ? 'Device groups' : 'All photos'; layoutToggle.setAttribute('aria-pressed', String(layout === 'device'));
-      resetView(); buildView();
+      buildView();
+      resetView();
     });
     previousDeviceButton.addEventListener('click', event => { event.stopPropagation(); focusDevice(activeDeviceIndex - 1); });
     nextDeviceButton.addEventListener('click', event => { event.stopPropagation(); focusDevice(activeDeviceIndex + 1); });
@@ -138,6 +183,39 @@
     const spacing = (outer - inner) / Math.max(1, chronological.length - 1);
     chronological.forEach((entry, index) => addRing(stage, entry, index, inner + index * spacing, 0, 0, 0)); contentBounds = { x: outer, y: outer };
   }
+  function packDeviceCircles(groups) {
+    // Force-based circle packing: circles start seeded along a golden-
+    // angle spiral (bigger ones closer to center), then repeatedly
+    // resolve pairwise overlaps while a gentle pull toward the origin
+    // lets everything settle into a tight, organic cluster — bubbles
+    // nestling together rather than rigid grid rows. Trivial cost for
+    // the handful of device categories involved (O(n^2) per iteration,
+    // n <= 7), so this runs instantly.
+    const n = groups.length;
+    groups.forEach((g, i) => {
+      const angle = i * 2.399963; // golden angle, spreads seeds evenly
+      const spiralR = Math.sqrt(i + 1) * (g.radius * 0.7 + 50);
+      g.x = Math.cos(angle) * spiralR; g.y = Math.sin(angle) * spiralR;
+    });
+    for (let iter = 0; iter < CONFIG.packIterations; iter++) {
+      // Anisotropic pull: X is barely reined in (packPullX close to 1)
+      // so the cluster is free to spread out wide, while Y is pulled
+      // in more firmly (packPullY noticeably lower) — settles into a
+      // wide, horizontal oval instead of a phone-friendly circle.
+      groups.forEach(g => { g.x *= CONFIG.packPullX; g.y *= CONFIG.packPullY; });
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = groups[i], b = groups[j];
+          const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy) || 0.01;
+          const minDist = a.radius + b.radius + CONFIG.packPaddingPx;
+          if (dist < minDist) {
+            const overlap = (minDist - dist) / 2, nx = dx / dist, ny = dy / dist;
+            a.x -= nx * overlap; a.y -= ny * overlap; b.x += nx * overlap; b.y += ny * overlap;
+          }
+        }
+      }
+    }
+  }
   function buildDeviceGroups() {
     deviceGroups = []; activeDeviceIndex = -1;
     const groups = CATEGORIES.slice(1).map(([id, label], order) => ({ id, label, order, byYear: new Map() })), groupById = new Map(groups.map(group => [group.id, group]));
@@ -151,35 +229,27 @@
     const active = groups.filter(group => group.byYear.size).map(group => {
       const chronological = Array.from(group.byYear.entries()).sort((a, b) => a[0] - b[0]);
       return { ...group, chronological, radius: startRadius + ringGap * (chronological.length - 1) };
-    }).sort((a, b) => b.radius - a.radius);
-    const totalArea = active.reduce((sum, group) => sum + Math.pow(group.radius * 2 + CONFIG.groupPadding, 2), 0);
-    const targetWidth = Math.sqrt(totalArea * 1.35);
-    const rows = [];
-    active.forEach(group => {
-      const diameter = group.radius * 2;
-      let row = rows.find(candidate => candidate.width && candidate.width + CONFIG.groupPadding + diameter <= targetWidth);
-      if (!row) { row = { items: [], width: 0, height: 0 }; rows.push(row); }
-      row.items.push(group); row.width += (row.width ? CONFIG.groupPadding : 0) + diameter; row.height = Math.max(row.height, diameter);
     });
-    const totalHeight = rows.reduce((sum, row) => sum + row.height, 0) + CONFIG.groupPadding * Math.max(0, rows.length - 1);
-    let yCursor = -totalHeight / 2;
+    packDeviceCircles(active);
     let maxX = 0, maxY = 0;
-    rows.forEach(row => {
-      let xCursor = -row.width / 2;
-      row.items.forEach(group => {
-        const x = xCursor + group.radius;
-        const y = yCursor + row.height / 2;
-        const deviceLabel = document.createElement('div'); deviceLabel.className = 'flat-device-label-v2'; deviceLabel.textContent = group.label;
-        deviceLabel.style.transform = 'translate(' + x + 'px,' + (y - group.radius - 95) + 'px)'; stage.appendChild(deviceLabel);
-        group.chronological.forEach(([year, photos], yearIndex) => addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, group.radius));
-        deviceGroups.push({ id: group.id, label: group.label, order: group.order, x, y, radius: group.radius });
-        xCursor += group.radius * 2 + CONFIG.groupPadding;
-        maxX = Math.max(maxX, Math.abs(x) + group.radius); maxY = Math.max(maxY, Math.abs(y) + group.radius + 130);
-      });
-      yCursor += row.height + CONFIG.groupPadding;
+    active.forEach(group => {
+      const { x, y, radius, label } = group;
+      const deviceLabel = document.createElement('div'); deviceLabel.className = 'flat-device-label-v2'; deviceLabel.textContent = label;
+      deviceLabel.style.transform = 'translate(' + x + 'px,' + y + 'px)'; stage.appendChild(deviceLabel);
+      group.chronological.forEach(([year, photos], yearIndex) => addRing(stage, { year, photos }, yearIndex, startRadius + yearIndex * ringGap, x, y, group.radius));
+      deviceGroups.push({ id: group.id, label: group.label, order: group.order, x, y, radius: group.radius });
+      maxX = Math.max(maxX, Math.abs(x) + radius); maxY = Math.max(maxY, Math.abs(y) + radius + 130);
     });
     deviceGroups.sort((a, b) => a.order - b.order);
     contentBounds = { x: maxX, y: maxY };
+    // Whichever group ended up closest to the cluster's own center is
+    // "home" — what we focus on first when entering device-layout mode.
+    let closest = 0, closestDistance = Infinity;
+    deviceGroups.forEach((g, index) => {
+      const distance = Math.hypot(g.x, g.y);
+      if (distance < closestDistance) { closestDistance = distance; closest = index; }
+    });
+    homeDeviceIndex = closest;
   }
   function buildView() {
     stage.replaceChildren(); if (!years.length) return;
@@ -201,11 +271,14 @@
     const travelY = layout === 'device' ? contentBounds.y * baseScale * view.scale : Math.max(0, contentBounds.y * baseScale * (view.scale - panBaseScale));
     view.tx = clamp(view.tx, -travelX, travelX); view.ty = clamp(view.ty, -travelY, travelY);
   }
-  function resetView() { view.scale = layout === 'device' ? 1 : CONFIG.allMinScale; view.tx = 0; view.ty = 0; applyView(); }
+  function resetView() {
+    if (layout === 'device' && deviceGroups.length) { focusDevice(homeDeviceIndex); return; }
+    view.scale = layout === 'device' ? 1 : CONFIG.allMinScale; view.tx = 0; view.ty = 0; applyView();
+  }
   function pairMetrics() { const [one, two] = Array.from(pointers.values()); return { x: (one.x + two.x) / 2, y: (one.y + two.y) / 2, distance: Math.hypot(two.x - one.x, two.y - one.y) || 1 }; }
   function beginMulti() { const metric = pairMetrics(); gesture = { type: 'multi', ...metric, scale: view.scale, tx: view.tx, ty: view.ty }; viewport.classList.add('is-dragging'); }
   function onPointerDown(event) {
-    if (!isFlat || event.target.closest('#flat-filters-v2, #flat-layout-toggle-v2')) return;
+    if (!isFlat || event.target.closest('#flat-filters-v2, #flat-layout-toggle-v2, #flat-device-nav-v2')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY }); try { viewport.setPointerCapture(event.pointerId); } catch (_) {}
     if (pointers.size === 1) { gesture = { type: 'single', id: event.pointerId, x: event.clientX, y: event.clientY, tx: view.tx, ty: view.ty }; viewport.classList.add('is-dragging'); } else beginMulti();
   }
@@ -229,7 +302,9 @@
     view.tx = x - (x - view.tx) * ratio; view.ty = y - (y - view.ty) * ratio; view.scale = nextScale; clampView(); applyView();
   }
   function enterFlat() {
-    if (isFlat) return; savedScrollY = window.scrollY; document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden'; document.body.classList.add('mode-flat'); viewport.setAttribute('aria-hidden','false'); modeToggle.textContent = 'Tunnel'; modeToggle.setAttribute('aria-pressed','true'); isFlat = true; resetView(); buildView();
+    if (isFlat) return; savedScrollY = window.scrollY; document.documentElement.style.overflow = 'hidden'; document.body.style.overflow = 'hidden'; document.body.classList.add('mode-flat'); viewport.setAttribute('aria-hidden','false'); modeToggle.textContent = 'Tunnel'; modeToggle.setAttribute('aria-pressed','true'); isFlat = true;
+    buildView();
+    resetView();
   }
   function exitFlat() {
     if (!isFlat) return; pointers.clear(); gesture = null; preview.classList.remove('is-visible'); clearRing(); viewport.classList.remove('is-dragging'); document.body.classList.remove('mode-flat'); viewport.setAttribute('aria-hidden','true'); document.documentElement.style.overflow = ''; document.body.style.overflow = ''; window.scrollTo(0,savedScrollY); modeToggle.textContent = 'Flat'; modeToggle.setAttribute('aria-pressed','false'); isFlat = false;

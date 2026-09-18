@@ -929,7 +929,7 @@ body.modal-open #timeline {
   left: 24px;
   z-index: 12;
   padding: 10px 16px;
-  background: #111;
+  background: #da0000;
   border: 1px solid #333;
   border-radius: 999px;
   color: #fff;

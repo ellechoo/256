@@ -33,6 +33,16 @@
     modeSwitchDevice.disabled = disabled;
   }
 
+  // Remembers which mode the user was last on across a page refresh
+  // (see restoreSavedMode() below). Wrapped in try/catch since
+  // localStorage can throw in some private-browsing contexts -- losing
+  // the memory there is fine, it just falls back to always opening on
+  // tunnel like before.
+  const VIEW_MODE_KEY = 'septemberThirdViewMode';
+  function saveMode(m) {
+    try { localStorage.setItem(VIEW_MODE_KEY, m); } catch (e) { /* ignore */ }
+  }
+
   const TUNNEL_LAP_MS = 600;
   const TUNNEL_COLLAPSE_MS = 360;
   const TUNNEL_DEPARTURE_MS = TUNNEL_LAP_MS + TUNNEL_COLLAPSE_MS;
@@ -147,6 +157,7 @@
     document.body.classList.remove('mode-transitioning');
     hasVisitedFlat = true;
     mode = 'flat';
+    saveMode('flat');
     setNavDisabled(false);
     animating = false;
   }
@@ -206,6 +217,7 @@
 
     document.body.classList.remove('mode-transitioning');
     mode = 'tunnel';
+    saveMode('tunnel');
     setNavDisabled(false);
     animating = false;
   }
@@ -220,10 +232,39 @@
     flatToTunnel();
   });
 
+  // If the user was on flat mode when they last left/refreshed the
+  // page, open there directly instead of always landing back on
+  // tunnel -- the whole point of remembering it is that the page
+  // shouldn't feel like it forgot where they were. This settles flat
+  // straight into its resting state (prepareEntrance + a ~0ms
+  // playEntrance) rather than replaying the full tunnel-departure/
+  // flat-grow choreography, since that cinematic is for an active
+  // choice to switch views, not an unrelated page reload. Always opens
+  // on the home group -- only the mode itself is remembered, not the
+  // exact group/zoom the user had. A duration of exactly 0 risks a
+  // divide-by-zero landing on NaN if the first animation frame fires
+  // on the very same tick playEntrance starts on; 1ms is close enough
+  // to instant that it's imperceptible while staying safely nonzero.
+  function restoreSavedMode() {
+    if (mode === 'flat') return;
+    let saved = null;
+    try { saved = localStorage.getItem(VIEW_MODE_KEY); } catch (e) { /* ignore */ }
+    if (saved !== 'flat') return;
+
+    window.TunnelBridge.setPaused(true);
+    const anchorId = window.Flat.prepareEntrance(null);
+    window.Flat.playEntrance(anchorId, 1);
+
+    hasVisitedFlat = true;
+    mode = 'flat';
+    document.documentElement.classList.remove('mode-flat-restore');
+  }
+
   // The switch starts disabled (see index-v2.html) until both the
   // tunnel and flat datasets have finished loading.
   (function whenReady() {
     if (window.TunnelBridge && window.TunnelBridge.getYearsCount() > 0 && window.Flat && window.Flat.isReady()) {
+      restoreSavedMode();
       setNavDisabled(false);
     } else {
       setTimeout(whenReady, 60);

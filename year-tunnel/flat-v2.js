@@ -107,7 +107,7 @@
 
   const deviceNav = document.createElement('div');
   deviceNav.id = 'flat-device-nav-v2';
-  deviceNav.innerHTML = '<button type="button" aria-label="Previous device group">&larr;</button><span>Device group</span><button type="button" aria-label="Next device group">&rarr;</button>';
+  deviceNav.innerHTML = '<button type="button" aria-label="Previous device group">&lsaquo;</button><span>Device group</span><button type="button" aria-label="Next device group">&rsaquo;</button>';
   const previousDeviceButton = deviceNav.querySelector('button:first-child');
   const deviceName = deviceNav.querySelector('span');
   const nextDeviceButton = deviceNav.querySelector('button:last-child');

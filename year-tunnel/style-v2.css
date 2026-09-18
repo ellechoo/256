@@ -1,6 +1,92 @@
 /* Version 2 keeps the tunnel's original styling and only replaces flat mode. */
 @import url("style.css");
 
+/* Paired with the inline anti-flash script in index-v2.html's <head>:
+   if the user was last on flat mode, this class is added before first
+   paint so the tunnel view (and its white background) never becomes
+   visible even for a frame while transition.js waits for both
+   datasets to load and calls restoreSavedMode(). Removed once that
+   restore actually runs. */
+html.mode-flat-restore,
+html.mode-flat-restore body {
+  background: #000;
+}
+
+html.mode-flat-restore #tunnel-viewport,
+html.mode-flat-restore #timeline,
+html.mode-flat-restore #scroll-hint {
+  display: none;
+}
+
+/* The tunnel photo modal's prev/next buttons were a tall flank
+   (26px x 84px) rounded only on their outer corners. Framed as true
+   semicircles instead: width set to exactly half the height, with
+   999px rounding on the outer corners -- the same trick used for the
+   flat-mode device-nav buttons and the year-rail's active teardrop.
+   left/right offsets match the width so each button still sits flush
+   against the panel with no gap or overlap. The base stylesheet
+   doesn't center a button's own text against a non-default height, so
+   it's centered explicitly here too -- without this the glyph sits up
+   near the top of the semicircle instead of in its middle. */
+.modal-nav-prev,
+.modal-nav-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 64px;
+}
+
+.modal-nav-prev {
+  left: -32px;
+  border-radius: 999px 0 0 999px;
+}
+
+.modal-nav-next {
+  right: -32px;
+  border-radius: 0 999px 999px 0;
+}
+
+/* A small, unobtrusive hint in the bottom-right corner of the tunnel
+   view -- no card/border, just text. #tunnel-viewport (in the base
+   stylesheet) is a full-screen, OPAQUE white box, so this only has any
+   chance of being visible at all -- let alone specifically covered by
+   a passing photo rather than by that white sheet everywhere -- by
+   living INSIDE #tunnel-viewport rather than as its sibling (see
+   index-v2.html): that way it paints on top of the viewport's own
+   background, same as everything else inside it, and simple DOM order
+   (this div comes before #tunnel-stage) puts it underneath any actual
+   ring/photo content, which is built inside #tunnel-stage and so
+   always paints after it. position:fixed still pins it to the actual
+   browser corner rather than #tunnel-viewport's own box -- an
+   ancestor's position:fixed doesn't create a containing block for a
+   fixed descendant (only transform/filter/etc. do), and here the two
+   happen to be the same size anyway. */
+#scroll-hint {
+  position: fixed;
+  right: 22px;
+  bottom: 20px;
+  color: rgba(34, 34, 34, 0.42);
+  font: 500 10px/1 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 320ms ease;
+}
+
+/* Tunnel-only chrome: hidden once flat mode is showing, and faded out
+   during the tunnel<->flat transition the same way #timeline is
+   (its dark-on-white styling wouldn't read against the transition's
+   black backdrop anyway). */
+body.mode-flat #scroll-hint {
+  display: none;
+}
+
+body.mode-transitioning #scroll-hint {
+  opacity: 0;
+}
+
 body.mode-flat #flat-viewport {
   display: block;
   background: #000;
@@ -14,31 +100,34 @@ body.mode-flat #flat-viewport.is-dragging { cursor: grabbing; }
    and flat modes — it replaces the old tunnel-only "09.03.(year)"
    label and the separate top-right mode-toggle button with one
    persistent switch between the two views. Sits in the same slot the
-   year label used to occupy. A translucent, blurred white "glass"
-   panel reads clearly against both the light tunnel background and
-   the black flat background, so it needs no per-mode color override. */
+   year label used to occupy. Solid white (no more translucency/blur)
+   reads clearly against both the light tunnel background and the
+   black flat background, so it needs no per-mode color override. */
 #mode-nav {
   position: fixed;
-  top: 28px;
+  top: 20px;
   left: 50%;
   z-index: 60;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 18px;
+  gap: 8px;
+  padding: 7px 8px 7px 14px;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.68);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: #fff;
   border-radius: 999px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 }
 
+/* VCR OSD Mono -- the project's existing display monospace (also used
+   for the active year label and the modal's photo titles) -- rather
+   than the base Inter sans. Ships as a single weight, so 400 rather
+   than the sans version's 600. Sized and spaced to match #mode-switch
+   button below so the whole line still reads as one continuous piece
+   of type. */
 #mode-nav-text {
-  color: #222;
-  font: 600 11px/1 var(--font-sans);
-  letter-spacing: 0.14em;
+  color: #000;
+  font: 400 14px/1 var(--font-mono);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -79,16 +168,22 @@ body.mode-flat #flat-viewport.is-dragging { cursor: grabbing; }
   z-index: 1;
   padding: 7px 14px;
   border: 0;
+  border-radius: 999px;
   background: none;
-  color: #222;
-  font: 600 11px/1 var(--font-sans);
-  letter-spacing: 0.14em;
+  color: #000;
+  font: 400 14px/1 var(--font-mono);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: color 160ms ease;
+  transition: color 160ms ease, background 160ms ease;
 }
 
-#mode-switch button:hover:not(:disabled):not([aria-pressed="true"]) { color: #000; }
+/* Slightly darker than the track's own resting grey (0.08) -- a hover
+   cue for the side that isn't already carrying the solid black pill. */
+#mode-switch button:hover:not(:disabled):not([aria-pressed="true"]) {
+  color: #000;
+  background: rgba(34, 34, 34, 0.14);
+}
 
 #mode-switch button[aria-pressed="true"] {
   color: #fff;
@@ -239,9 +334,10 @@ body.modal-open #timeline {
    ring's own outline and the ring just inside it -- lights up on
    hover instead of the outline itself changing. Drawn as an evenodd
    donut path so the fill only covers that band, not the disc inside
-   the inner ring too. */
+   the inner ring too. A soft, very translucent white wash against the
+   black stage, rather than a solid saturated red. */
 .flat-ring-fill-v2 {
-  fill: #94000c;
+  fill: #fff;
   fill-rule: evenodd;
   opacity: 0;
   pointer-events: none;
@@ -253,18 +349,21 @@ body.modal-open #timeline {
    since every fill in a group is now built into one shared layer
    painted before any of that group's outlines/labels. */
 .flat-ring-fill-v2.is-highlighted {
-  opacity: 0.85;
+  opacity: 0.12;
 }
 
+/* A little more room between the digits than the base sizing, and a
+   touch lighter in weight -- still 600, not the mono display face's
+   400, just not quite as heavy as the original. */
 .flat-year-label-v2 {
   position: absolute;
   left: 0;
   top: 0;
   color: #fff;
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.1em;
   padding: 6px 14px;
   pointer-events: none;
   text-align: center;
@@ -376,15 +475,26 @@ body.modal-open #timeline {
   white-space: nowrap;
 }
 
+/* The prev/next buttons are no longer separate circles floating
+   inside the pill with their own padding -- they now ARE the pill's
+   left and right ends. No horizontal padding on the container itself
+   (that would leave a gap between a button and the pill's own edge);
+   the label span carries its own padding instead. Each button is
+   exactly half as wide as the pill is tall and rounded 999px on its
+   outer corners only, which -- for a box that shape -- renders as a
+   true semicircle (see the matching trick already used for the
+   teardrop year-dot and the year-nav's active state elsewhere in this
+   file), fused seamlessly into the container's own curve since both
+   share the same height and radius. */
 #flat-device-nav-v2 {
   position: absolute;
   bottom: 24px;
   left: 50%;
   z-index: 12;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 16px;
+  align-items: stretch;
+  height: 44px;
+  padding: 0;
   background: #111;
   border: 1px solid #333;
   border-radius: 999px;
@@ -392,21 +502,29 @@ body.modal-open #timeline {
 }
 
 #flat-device-nav-v2 button {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #333;
-  border-radius: 50%;
-  background: #111;
+  flex: 0 0 auto;
+  width: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: #fff;
   cursor: pointer;
-  font-size: 16px;
-  transition: background 120ms ease, border-color 120ms ease;
+  font-size: 17px;
+  line-height: 1;
+  transition: background 120ms ease;
 }
 
-#flat-device-nav-v2 button:hover { border-color: #fff; background: #222; }
+#flat-device-nav-v2 button:first-child { border-radius: 999px 0 0 999px; }
+#flat-device-nav-v2 button:last-child  { border-radius: 0 999px 999px 0; }
+
+#flat-device-nav-v2 button:hover { background: #262626; }
 
 #flat-device-nav-v2 span {
-  min-width: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 108px;          /* pill shortened a little from 132px */
+  padding: 0 10px;
   color: #fff;
   font: 600 10px/1 var(--font-sans);
   letter-spacing: 0.14em;
@@ -423,7 +541,10 @@ body.modal-open #timeline {
   margin-left: -250px;       /* matched to half the new width */
   margin-top: -22px;         /* re-centered vertically for the bigger face */
   color: #fff;
-  font: 600 44px/1 var(--font-sans);
+  /* VCR OSD Mono -- the project's existing display monospace, already
+     used for the year rail and the modal's photo titles. Ships as a
+     single weight, so 400 rather than the sans version's 600. */
+  font: 400 44px/1 var(--font-mono);
   letter-spacing: 0.16em;
   cursor: default;
   pointer-events: auto;
@@ -482,7 +603,7 @@ body.modal-open #timeline {
 @media (max-width: 640px) {
   #flat-preview-v2 { display: none; }
   #flat-device-preview-v2 { display: none; }
-  #flat-device-nav-v2 { bottom: 16px; gap: 10px; }
+  #flat-device-nav-v2 { bottom: 16px; }
 }
 
 /* When zoomed all the way out, rings are too small to make out easily,

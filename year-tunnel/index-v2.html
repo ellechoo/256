@@ -4,6 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>September 3rd — A Tunnel Through Time</title>
+  <script>
+    // Runs before anything paints, so if the user was last on flat
+    // mode there's no flash of the tunnel view (white background,
+    // rings, year label) while transition.js waits for both datasets
+    // to load and restores it -- see html.mode-flat-restore in
+    // style-v2.css and restoreSavedMode() in transition.js.
+    (function () {
+      try {
+        if (localStorage.getItem('septemberThirdViewMode') === 'flat') {
+          document.documentElement.classList.add('mode-flat-restore');
+        }
+      } catch (e) { /* ignore */ }
+    }());
+  </script>
   <link rel="stylesheet" href="style-v2.css">
 </head>
 <body>
@@ -16,7 +30,10 @@
     </div>
   </div>
 
-  <div id="tunnel-viewport"><div id="tunnel-stage"></div></div>
+  <div id="tunnel-viewport">
+    <div id="scroll-hint" aria-hidden="true">Scroll to move through the years</div>
+    <div id="tunnel-stage"></div>
+  </div>
   <div id="scroll-spacer"></div>
   <nav id="timeline" aria-label="Year timeline"></nav>
 

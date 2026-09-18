@@ -677,8 +677,15 @@ body.modal-open #timeline {
   transition: opacity 160ms ease;
 }
 
+/* The base rule's pointer-events: none keeps the hidden key from
+   intercepting clicks meant for whatever's underneath it (the flat
+   canvas itself). That has to be switched back to auto here too, not
+   just opacity -- otherwise, once visible, its rows LOOK clickable but
+   every click passes straight through to the canvas behind them instead
+   of reaching the button. */
 #flat-gps-key-v2.is-visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 /* Each row is a <button> (see updateGpsKey() in flat-v2.js) so it can be

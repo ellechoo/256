@@ -167,6 +167,8 @@ function updateTimelineActive() {
 
 const aboutPanel = document.getElementById('about-panel');
 const aboutToggle = document.getElementById('about-toggle');
+const aboutArrow = document.getElementById('about-arrow');
+const ABOUT_ARROW_GAP = 4;
 
 const modalEl = document.getElementById('photo-modal');
 const modalBackdrop = modalEl.querySelector('.modal-backdrop');
@@ -319,8 +321,34 @@ function closeAboutPanel() {
   aboutToggle.setAttribute('aria-expanded', 'false');
 }
 
+// The one place is-open actually flips. Both click targets below (the
+// whole box, and the floating arrow underneath it) just call this --
+// there's deliberately only one state-mutating handler rather than one
+// per element, so there's no risk of a click on #about-toggle (which
+// bubbles up into #about-panel's own listener) toggling the state
+// twice in one click.
+function toggleAboutPanel() {
+  const open = aboutPanel.classList.toggle('is-open');
+  aboutToggle.setAttribute('aria-expanded', String(open));
+}
+
+// Keeps the floating arrow's vertical position glued to the box's
+// actual current bottom edge, including while it's mid-animation --
+// ResizeObserver fires on every box-size change the max-height
+// transition produces (effectively every frame of it), so this tracks
+// smoothly without needing to duplicate that transition's duration/
+// easing here or hardcode a collapsed/open height.
+function positionAboutArrow() {
+  const rect = aboutPanel.getBoundingClientRect();
+  aboutArrow.style.top = (rect.bottom + ABOUT_ARROW_GAP) + 'px';
+}
+
 // Always starts collapsed and only opens on an explicit click -- never
-// auto-opens itself. Closes itself again the instant the user starts
+// auto-opens itself. The whole box is the click target, not just the
+// old bottom row, so clicking anywhere in it (the description text
+// included) opens it when collapsed and closes it again when open;
+// the floating arrow underneath is a second, equivalent click target
+// for the same toggle. Closes itself the instant the user starts
 // scrolling (a real 'scroll' event, not frameLoop's own per-frame read
 // of window.scrollY) so the description doesn't sit open on top of
 // photos flying past underneath it while they're mid-scroll. That same
@@ -330,11 +358,19 @@ function closeAboutPanel() {
 // this panel is tunnel-only chrome that's already hidden/faded during
 // those moments anyway.
 function setupAboutPanel() {
-  aboutToggle.addEventListener('click', () => {
-    const open = aboutPanel.classList.toggle('is-open');
-    aboutToggle.setAttribute('aria-expanded', String(open));
-  });
+  aboutPanel.addEventListener('click', toggleAboutPanel);
+  aboutArrow.addEventListener('click', toggleAboutPanel);
   window.addEventListener('scroll', closeAboutPanel, { passive: true });
+
+  positionAboutArrow();
+  // ResizeObserver has near-universal real-browser support (this is
+  // the only thing gating it), but the jsdom harness this project's
+  // whole test suite runs on doesn't implement it at all -- an
+  // unguarded `new ResizeObserver(...)` would throw there and take the
+  // rest of init() down with it, well past just this one feature.
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(positionAboutArrow).observe(aboutPanel);
+  }
 }
 
 function frameLoop(now) {

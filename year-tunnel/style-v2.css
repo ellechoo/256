@@ -103,29 +103,80 @@ body.mode-transitioning #scroll-hint {
    no rounding) rather than floating as a card, so opening it reads as
    pulling more of a film roll down from off-screen above rather than
    a card growing in place: #about-body is what actually grows/
-   shrinks, and since it comes before #about-toggle in the markup, the
-   toggle row ("About 09.03" + the arrow) is always the last thing in
-   the strip, staying at the bottom and visible in both states while
-   the description reveals above it, pushing the strip's bottom edge
-   further down the screen as it opens. Lives inside #tunnel-viewport
-   for the same reason #scroll-hint does (see above): that's the only
-   way to paint over its opaque white background rather than sitting
-   behind it. Tunnel-only chrome -- hidden in flat mode, faded during
-   the tunnel<->flat transition, and forced shut the moment the user
-   starts scrolling or opens the photo modal (see script-v2.js) since
-   an open strip would otherwise sit on top of photos flying past
-   underneath it. */
+   shrinks, and since it comes before #about-toggle in the markup,
+   "About 09.03" is always the last thing in the strip, staying at the
+   bottom and visible in both states while the description reveals
+   above it, pushing the strip's bottom edge further down the screen
+   as it opens. The whole box is the click target (see script-v2.js --
+   a single listener on #about-panel itself, so clicking anywhere in
+   it, description text included, opens/closes it, not just the
+   bottom row), so it gets its own cursor: pointer rather than relying
+   on #about-toggle's. Lives inside #tunnel-viewport for the same
+   reason #scroll-hint does (see above): that's the only way to paint
+   over its opaque white background rather than sitting behind it.
+   Tunnel-only chrome -- hidden in flat mode, faded during the
+   tunnel<->flat transition (and not clickable then either, now that
+   the click target is the whole box rather than one small button), and
+   forced shut the moment the user starts scrolling or opens the photo
+   modal (see script-v2.js) since an open strip would otherwise sit on
+   top of photos flying past underneath it. */
 #about-panel {
   position: fixed;
   top: 0;
   right: 22px;
   z-index: 40;
   width: 190px;
+  cursor: pointer;
+  /* Collapsed and un-hovered, the box sits at half opacity; hovering
+     or opening it brings it back (see the rules below) -- this is the
+     resting state both start from and settle back to. */
+  opacity: 0.5;
+  transition: opacity 320ms ease, transform 200ms ease;
+}
+
+/* Extends solid black upward past the box's own visible top edge,
+   entirely off-screen (above y:0, so invisible) until the hover-tug
+   below translates the whole #about-panel down a few pixels -- at
+   that point this pseudo-element rides down with it and its bottom
+   few pixels enter the viewport right as the real box's top edge
+   pulls away from y:0, plugging the gap with more black instead of
+   exposing the white tunnel background above it. Lives on #about-panel
+   itself (not .about-panel-card) specifically so it isn't clipped by
+   that card's own overflow: hidden, which exists to clip the sprocket
+   pattern and the open/close height animation, not this. Tall enough
+   (24px) to comfortably cover the 6px tug with room to spare. */
+#about-panel::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: 0;
+  right: 0;
+  height: 24px;
   background: #000;
-  border-radius: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
-  overflow: hidden;
-  transition: opacity 320ms ease;
+  pointer-events: none;
+}
+
+/* The "hovering tugs at it" cue, collapsed state only -- no color
+   change on the text itself, just the whole box nudging down a few
+   pixels as if hovering had caught hold of the film and pulled, back
+   to full opacity while hovered. Scoped to :not(.is-open) since once
+   it's open the box is tall and the hover affordance no longer needs
+   to sell "there's more here" (it's already full opacity via the
+   .is-open rule below, and doesn't tug). #about-arrow's own matching
+   hover rule (further down) is what makes the floating arrow ride
+   down together with the box rather than being left behind. */
+#about-panel:not(.is-open):hover {
+  transform: translateY(6px);
+  opacity: 1;
+}
+
+/* Opening it is a firmer commitment than a passing hover -- once
+   clicked open, it stays at full opacity even if the pointer wanders
+   off the box afterward (e.g. down onto the description text, or away
+   entirely while reading), rather than fading back to 0.5 the instant
+   the hover ends. */
+#about-panel.is-open {
+  opacity: 1;
 }
 
 body.mode-flat #about-panel {
@@ -134,11 +185,29 @@ body.mode-flat #about-panel {
 
 body.mode-transitioning #about-panel {
   opacity: 0;
+  pointer-events: none;
 }
 
 body.modal-open #about-panel {
   opacity: 0;
   pointer-events: none;
+}
+
+/* The actual visible black card -- background, shape, shadow, and the
+   overflow: hidden that clips the sprocket pattern's corners and
+   drives the open/close height animation. Split out from #about-panel
+   itself so that element can stay overflow: visible, which is what
+   lets its own ::before (above) extend past its top edge instead of
+   being clipped off. position: relative makes this the anchor the
+   sprockets below position themselves against, matching this card's
+   exact box rather than #about-panel's larger (because of ::before)
+   one. */
+.about-panel-card {
+  position: relative;
+  background: #000;
+  border-radius: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
 }
 
 /* Square "cutouts" -- solid white squares standing in for actual
@@ -199,20 +268,27 @@ body.modal-open #about-panel {
   letter-spacing: 0.01em;
 }
 
-/* Stacked and centered rather than a single side-by-side row: "About
-   09.03" on its own line with the arrow on the line below it, both
-   centered, and extra padding above the label so there's real black
-   space at the top of the collapsed strip before any type appears --
-   reads more like the leader of a film roll than a tightly-packed
-   label. */
+/* "About 09.03", centered, with real black space above it before any
+   type appears -- reads more like the leader of a film roll than a
+   tightly-packed label. No arrow in here any more (see #about-arrow,
+   floating below the box) -- bottom padding is trimmed to just enough
+   breathing room under the label, since the label is now genuinely
+   the last thing in the box: this padding is what sets the collapsed
+   box's actual bottom edge. Purely a semantic/focusable wrapper at
+   this point (aria-expanded/aria-controls, real keyboard activation)
+   -- it has no click handler of its own any more, since a click or a
+   keyboard-synthesized click on it bubbles up to #about-panel's own
+   listener the same as a click anywhere else in the box would, so
+   there's exactly one place that actually flips is-open. No hover
+   state here either: #about-panel's own :hover (above) is what now
+   provides the "hovering tugs at it" cue, so the label's text no
+   longer darkens on hover. */
 #about-toggle {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   width: 100%;
-  padding: 34px 0 16px;
+  padding: 34px 0 22px;
   border: 0;
   background: none;
   color: #fff;
@@ -223,30 +299,55 @@ body.modal-open #about-panel {
   -webkit-tap-highlight-color: transparent;
 }
 
-#about-toggle:hover {
-  opacity: 0.78;
-}
-
 #about-toggle:focus-visible {
   outline: 0;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
 }
 
-/* Reuses the exact glyph + weight the photo modal's ‹ › carousel
-   arrows use (see .modal-nav in the base stylesheet: font-size 22px,
-   font-weight 400) rather than the tiny default triangle, just
-   rotated onto the vertical axis and sized down slightly to fit this
-   much smaller bar -- pointing down while collapsed (more film to
-   pull out below) and flipping to point up once open (roll it back
-   up). The fixed-size flex box (rather than sizing the span to its
-   glyph) keeps it optically centered against "About 09.03" through
-   the rotation instead of drifting off the text's baseline. */
-.about-toggle-arrow {
+/* The open/close indicator, relocated outside the black box entirely
+   and floating in the white tunnel background just below it -- grey
+   rather than white/black so it reads against that white background.
+   Its own element (#about-arrow) is fixed at the same right/width as
+   #about-panel so it's horizontally centered under the box for free;
+   its `top` is kept in sync with the box's actual current bottom edge
+   by a ResizeObserver in script-v2.js (the box's height changes
+   continuously during the open/close transition, and a ResizeObserver
+   fires on exactly those changes, so no hardcoded duration/height
+   here needs to stay in lockstep with #about-body's own transition
+   above). ResizeObserver only fires on actual size changes though, not
+   on #about-panel's hover-tug (a transform, not a resize) -- the
+   translateY rule right below this one is what keeps the arrow riding
+   down together with the box during that tug instead of being left
+   behind, via the same general-sibling relationship the rotation rule
+   further down already relies on. Reuses the same glyph/weight/
+   rotation treatement the arrow had inside the box (see the removed
+   .about-toggle-arrow): pointing down while collapsed, flipping to
+   point up once open, via a plain CSS sibling selector -- #about-arrow
+   is a later sibling of #about-panel in the markup, so `.is-open`
+   toggling on the box alone is enough to drive it, no JS needed for
+   the rotation itself. */
+#about-arrow {
+  position: fixed;
+  right: 22px;
+  width: 190px;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 320ms ease, transform 200ms ease;
+}
+
+#about-panel:not(.is-open):hover ~ #about-arrow {
+  transform: translateY(6px);
+}
+
+.about-arrow-glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
+  color: rgba(0, 0, 0, 0.42);
   font-size: 18px;
   font-weight: 400;
   line-height: 1;
@@ -254,8 +355,22 @@ body.modal-open #about-panel {
   transition: transform 260ms cubic-bezier(.2, .8, .2, 1);
 }
 
-#about-panel.is-open .about-toggle-arrow {
+#about-panel.is-open ~ #about-arrow .about-arrow-glyph {
   transform: rotate(90deg);
+}
+
+body.mode-flat #about-arrow {
+  display: none;
+}
+
+body.mode-transitioning #about-arrow {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.modal-open #about-arrow {
+  opacity: 0;
+  pointer-events: none;
 }
 
 body.mode-flat #flat-viewport {

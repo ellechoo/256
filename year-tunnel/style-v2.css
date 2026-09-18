@@ -1,7 +1,7 @@
 /* Version 2 keeps the tunnel's original styling and only replaces flat mode. */
 @import url("style.css");
 
-/* Paired with the inline anti-flash script in index-v2.html's <head>:
+/* Paired with the inline anti-flash script in index.html's <head>:
    if the user was last on flat mode, this class is added before first
    paint so the tunnel view (and its white background) never becomes
    visible even for a frame while transition.js waits for both
@@ -62,7 +62,7 @@ html.mode-flat-restore #scroll-hint {
    chance of being visible at all -- let alone specifically covered by
    a passing photo rather than by that white sheet everywhere -- by
    living INSIDE #tunnel-viewport rather than as its sibling (see
-   index-v2.html): that way it paints on top of the viewport's own
+   index.html): that way it paints on top of the viewport's own
    background, same as everything else inside it, and simple DOM order
    (this div comes before #tunnel-stage) puts it underneath any actual
    ring/photo content, which is built inside #tunnel-stage and so
@@ -94,6 +94,168 @@ body.mode-flat #scroll-hint {
 
 body.mode-transitioning #scroll-hint {
   opacity: 0;
+}
+
+/* Collapsible project description, top-right of the tunnel, on the
+   same right-hand gutter #scroll-hint already uses (right: 22px) so
+   the two line up rather than one of them crowding the browser edge.
+   Flush against the very top of the screen (top: 0, square corners --
+   no rounding) rather than floating as a card, so opening it reads as
+   pulling more of a film roll down from off-screen above rather than
+   a card growing in place: #about-body is what actually grows/
+   shrinks, and since it comes before #about-toggle in the markup, the
+   toggle row ("About 09.03" + the arrow) is always the last thing in
+   the strip, staying at the bottom and visible in both states while
+   the description reveals above it, pushing the strip's bottom edge
+   further down the screen as it opens. Lives inside #tunnel-viewport
+   for the same reason #scroll-hint does (see above): that's the only
+   way to paint over its opaque white background rather than sitting
+   behind it. Tunnel-only chrome -- hidden in flat mode, faded during
+   the tunnel<->flat transition, and forced shut the moment the user
+   starts scrolling or opens the photo modal (see script-v2.js) since
+   an open strip would otherwise sit on top of photos flying past
+   underneath it. */
+#about-panel {
+  position: fixed;
+  top: 0;
+  right: 22px;
+  z-index: 40;
+  width: 190px;
+  background: #000;
+  border-radius: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  transition: opacity 320ms ease;
+}
+
+body.mode-flat #about-panel {
+  display: none;
+}
+
+body.mode-transitioning #about-panel {
+  opacity: 0;
+}
+
+body.modal-open #about-panel {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Square "cutouts" -- solid white squares standing in for actual
+   holes (true transparency would reveal whatever tunnel photo happens
+   to be passing behind the panel at that instant, which would read as
+   messy/distracting rather than as film), inset a few pixels from the
+   panel's true left/right edges rather than flush against them, so
+   each square reads as fully enclosed negative space with black on
+   all four sides -- flush against the edge, the square's outer side
+   would have nothing beyond it to read as a "wall", so it looked cut
+   open on that side instead of punched through. A single
+   repeating-linear-gradient with its "on" segment the same length as
+   the strip's own width produces evenly spaced true squares with no
+   extra markup, and since it's sized in %/100% height it keeps tiling
+   correctly as #about-panel grows taller on open -- no JS needed to
+   keep the pattern in sync with the collapse animation. */
+.about-sprockets {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #fff 0 8px,
+    transparent 8px 16px
+  );
+  pointer-events: none;
+}
+
+.about-sprockets-left { left: 7px; }
+.about-sprockets-right { right: 7px; }
+
+.about-content {
+  position: relative;
+  padding: 0 26px;
+}
+
+#about-body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 360ms cubic-bezier(.2, .8, .2, 1), opacity 200ms ease;
+}
+
+#about-panel.is-open #about-body {
+  /* Measured (real Inter metrics, 138px text column) at ~660px for the
+     current two-paragraph description -- 700px leaves headroom so a
+     future edit to the copy doesn't get silently clipped by overflow:
+     hidden the next time this file changes. */
+  max-height: 700px;
+  opacity: 1;
+}
+
+#about-body p {
+  margin: 14px 0 2px;
+  color: #fff;
+  font: 400 11.5px/1.6 var(--font-sans);
+  letter-spacing: 0.01em;
+}
+
+/* Stacked and centered rather than a single side-by-side row: "About
+   09.03" on its own line with the arrow on the line below it, both
+   centered, and extra padding above the label so there's real black
+   space at the top of the collapsed strip before any type appears --
+   reads more like the leader of a film roll than a tightly-packed
+   label. */
+#about-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 34px 0 16px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: 600 10px/1 var(--font-sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#about-toggle:hover {
+  opacity: 0.78;
+}
+
+#about-toggle:focus-visible {
+  outline: 0;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+/* Reuses the exact glyph + weight the photo modal's ‹ › carousel
+   arrows use (see .modal-nav in the base stylesheet: font-size 22px,
+   font-weight 400) rather than the tiny default triangle, just
+   rotated onto the vertical axis and sized down slightly to fit this
+   much smaller bar -- pointing down while collapsed (more film to
+   pull out below) and flipping to point up once open (roll it back
+   up). The fixed-size flex box (rather than sizing the span to its
+   glyph) keeps it optically centered against "About 09.03" through
+   the rotation instead of drifting off the text's baseline. */
+.about-toggle-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  transform: rotate(-90deg);
+  transition: transform 260ms cubic-bezier(.2, .8, .2, 1);
+}
+
+#about-panel.is-open .about-toggle-arrow {
+  transform: rotate(90deg);
 }
 
 body.mode-flat #flat-viewport {

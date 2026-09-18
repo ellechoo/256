@@ -165,6 +165,9 @@ function updateTimelineActive() {
   lastActiveRingIndex = index;
 }
 
+const aboutPanel = document.getElementById('about-panel');
+const aboutToggle = document.getElementById('about-toggle');
+
 const modalEl = document.getElementById('photo-modal');
 const modalBackdrop = modalEl.querySelector('.modal-backdrop');
 const modalClose = modalEl.querySelector('.modal-close');
@@ -310,6 +313,30 @@ function setupModalListeners() {
   });
 }
 
+function closeAboutPanel() {
+  if (!aboutPanel.classList.contains('is-open')) return;
+  aboutPanel.classList.remove('is-open');
+  aboutToggle.setAttribute('aria-expanded', 'false');
+}
+
+// Always starts collapsed and only opens on an explicit click -- never
+// auto-opens itself. Closes itself again the instant the user starts
+// scrolling (a real 'scroll' event, not frameLoop's own per-frame read
+// of window.scrollY) so the description doesn't sit open on top of
+// photos flying past underneath it while they're mid-scroll. That same
+// listener also quietly closes it for the handful of *programmatic*
+// scrolls elsewhere in the app (initial scroll position, the
+// tunnel<->flat transition's own scrollTo calls) -- harmless, since
+// this panel is tunnel-only chrome that's already hidden/faded during
+// those moments anyway.
+function setupAboutPanel() {
+  aboutToggle.addEventListener('click', () => {
+    const open = aboutPanel.classList.toggle('is-open');
+    aboutToggle.setAttribute('aria-expanded', String(open));
+  });
+  window.addEventListener('scroll', closeAboutPanel, { passive: true });
+}
+
 function frameLoop(now) {
   /* Flat mode has its own static rendering and gesture loop. Do not keep
      rotating or restyling 254 tunnel images underneath it — unless a
@@ -340,6 +367,7 @@ async function init() {
   buildRings();
   buildTimeline();
   setupModalListeners();
+  setupAboutPanel();
   sizeScrollSpacer();
   window.scrollTo(0, (BUFFER_CYCLES * yearsData.length + CONFIG.initialDepthOffset) * pixelsPerYear());
   window.addEventListener('resize', sizeScrollSpacer);

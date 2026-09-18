@@ -614,6 +614,26 @@
         preview.classList.remove('is-visible');
         clearRing(fillEl);
       });
+      // Same photo-detail popup the tunnel uses (close button, click the
+      // backdrop to dismiss, Escape, blurred background -- all of that
+      // lives in script-v2.js's modal and is untouched here), reused via
+      // the TunnelBridge rather than built a second time. Always opened
+      // without the </> nav: a flat tile isn't a step in an orderable
+      // sequence the way a tunnel ring's photos are, each one here is
+      // standalone. This fires for a tile whether or not its group is
+      // currently revealed, same as the hover preview above already
+      // does off the same `photo` object regardless of reveal state.
+      tile.addEventListener('click', event => {
+        event.stopPropagation();
+        if (window.TunnelBridge && window.TunnelBridge.openPhotoModal) {
+          window.TunnelBridge.openPhotoModal(
+            photo,
+            entry.year,
+            'photos/' + encodeURIComponent(photo.file),
+            photo.file + ' (' + entry.year + ')'
+          );
+        }
+      });
       ring.appendChild(tile);
       tileData.push({ el: tile, baseAngle: angle });
     });
@@ -630,7 +650,16 @@
   // A plain, static outline with no year, label, or photos of its own --
   // added just inside each group's smallest year ring so that year gets
   // a negative-space band to sit in too, the same as every other year.
-  function addBoundaryRing(parent, radius, centerX, centerY) {
+  // It also doubles as the hit area for the group-name hover/focus
+  // popup: a filled (but invisible) circle the same size as the outline,
+  // covering the whole inner disc the device-name label sits inside of
+  // rather than just the label's own text box -- moving the pointer
+  // anywhere in that empty space opens the popup, not only when it's
+  // exactly over the letters. groupId/label are only used to wire that
+  // trigger; passing them in keeps that logic next to the radius/shape
+  // math it depends on, the same way addRing() already wires its own
+  // hover handlers right where its geometry is built.
+  function addBoundaryRing(parent, radius, centerX, centerY, groupId, label) {
     const ring = document.createElement('div');
     ring.className = 'flat-ring-v2 flat-ring-boundary-v2';
     ring.style.transform = 'translate(' + centerX + 'px,' + centerY + 'px)';
@@ -642,6 +671,16 @@
     svg.style.height = radius * 2 + 20 + 'px';
     svg.style.marginLeft = -radius - 10 + 'px';
     svg.style.marginTop = -radius - 10 + 'px';
+
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    hit.classList.add('flat-group-hit-v2');
+    hit.setAttribute('cx', radius + 10);
+    hit.setAttribute('cy', radius + 10);
+    hit.setAttribute('r', radius);
+    hit.addEventListener('pointerenter', event => showDevicePreview(groupId, label, event));
+    hit.addEventListener('pointermove', event => positionDevicePreview({ x: event.clientX, y: event.clientY }));
+    hit.addEventListener('pointerleave', () => devicePreview.classList.remove('is-visible'));
+    svg.appendChild(hit);
 
     const outline = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     outline.classList.add('flat-ring-outline-v2');
@@ -765,14 +804,16 @@
     let maxX = 0, maxY = 0;
     active.forEach(group => {
       const { x, y, radius, label } = group;
+      // Pointer hover is now handled by the hit circle addBoundaryRing()
+      // builds below (the whole inner disc, not just this text), so the
+      // label itself only still needs tabindex + focus/blur for keyboard
+      // access -- someone tabbing to it should still get the same popup
+      // a mouse hovering the circle would.
       const deviceLabel = document.createElement('div');
       deviceLabel.className = 'flat-device-label-v2';
       deviceLabel.textContent = label;
       deviceLabel.style.transform = 'translate(' + x + 'px,' + y + 'px)';
       deviceLabel.setAttribute('tabindex', '0');
-      deviceLabel.addEventListener('pointerenter', event => showDevicePreview(group.id, label, event));
-      deviceLabel.addEventListener('pointermove', event => positionDevicePreview({ x: event.clientX, y: event.clientY }));
-      deviceLabel.addEventListener('pointerleave', () => devicePreview.classList.remove('is-visible'));
       deviceLabel.addEventListener('focus', () => showDevicePreview(group.id, label));
       deviceLabel.addEventListener('blur', () => devicePreview.classList.remove('is-visible'));
       stage.appendChild(deviceLabel);
@@ -782,8 +823,9 @@
       // One extra ring just inside the group's smallest year, purely so
       // that year also gets a negative-space band to sit in (its own
       // ring, at startRadius, would otherwise have nothing bounding it
-      // on the inside).
-      const boundaryRingEl = addBoundaryRing(stage, Math.max(0, startRadius - ringGap), x, y);
+      // on the inside). Also the hover trigger for the group-name popup
+      // -- see addBoundaryRing().
+      const boundaryRingEl = addBoundaryRing(stage, Math.max(0, startRadius - ringGap), x, y, group.id, label);
       groupRingEls.push(boundaryRingEl);
 
       const fillEls = fillElsByGroup.get(group.id);
@@ -964,7 +1006,18 @@
     viewport.classList.add('is-dragging');
   }
   function onPointerDown(event) {
-    if (!isFlat || event.target.closest('#flat-device-nav-v2') || event.target.closest('#flat-gps-toggle-v2') || event.target.closest('#flat-gps-key-v2')) return;
+    // Photo tiles need to be excluded the same way the other buttons
+    // already are: viewport.setPointerCapture() below redirects the
+    // pointer's subsequent events to `viewport` itself, and in real
+    // browsers that also breaks native `click` synthesis on whatever was
+    // actually pressed (the click ends up not firing on the tile at
+    // all) -- a jsdom test dispatching a synthetic click straight at the
+    // tile can't catch this, since it skips pointer capture entirely.
+    // Letting the tile handle its own pointerdown means a drag/pan
+    // gesture can no longer be STARTED with the very first touch on a
+    // tile (same trade-off device-nav/gps-toggle/gps-key already make),
+    // but dragging from anywhere else still works normally.
+    if (!isFlat || event.target.closest('#flat-device-nav-v2') || event.target.closest('#flat-gps-toggle-v2') || event.target.closest('#flat-gps-key-v2') || event.target.closest('.flat-photo-v2')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     try { viewport.setPointerCapture(event.pointerId); } catch (_) {}
     if (pointers.size === 1) {

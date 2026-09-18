@@ -178,19 +178,28 @@ let isModalOpen = false;
 let lastFocusedEl = null;
 let modalRingIndex = -1;
 let modalPhotoIndex = -1;
+// Whether the currently-open photo has siblings to step through with the
+// </>/ArrowLeft/ArrowRight nav -- true for a tunnel photo from a
+// multi-photo ring, always false for a flat-mode photo opened via
+// openStandalonePhotoModal() (see below): flat tiles aren't part of an
+// orderable sequence the way a ring's photos are, each one is its own
+// thing, so there's nothing sensible to page to.
+let modalCanNav = false;
 
 function textColorFor(hex) {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? 'rgba(0,0,0,.55)' : 'rgba(255,255,255,.9)';
 }
 
-function fillModal() {
-  const state = ringEls[modalRingIndex].photos[modalPhotoIndex];
-  const entry = yearsData[modalRingIndex];
-  const photo = entry.photos[modalPhotoIndex];
-  modalPhoto.src = state.img.src;
-  modalPhoto.alt = state.img.alt;
-  modalTitle.textContent = photo.title || (photo.file || '').replace(/\.[^.]+$/, '') || String(entry.year);
+// Fills the modal's photo/title/meta/swatches from a plain photo record
+// -- used both by fillModal() (the tunnel path, which resolves the photo
+// and its already-loaded <img> off the current ring/index) and directly
+// by openStandalonePhotoModal() (the flat path, which has no ring index
+// to resolve, just the photo object flat-v2.js already has in hand).
+function fillModalFrom(photo, year, imgSrc, imgAlt) {
+  modalPhoto.src = imgSrc;
+  modalPhoto.alt = imgAlt;
+  modalTitle.textContent = photo.title || (photo.file || '').replace(/\.[^.]+$/, '') || String(year);
   const fields = { photographer: photo.photographer, datetime: photo.datetime || photo.date || photo.datetimeOriginal, device: photo.device, location: photo.location || photo.gps };
   modalMetaList.querySelectorAll('.meta-row').forEach(row => {
     const value = fields[row.querySelector('dd').dataset.field];
@@ -207,15 +216,16 @@ function fillModal() {
   });
 }
 
-function openPhotoModal(state) {
-  if (isModalOpen) return;
-  isModalOpen = true;
-  modalRingIndex = state.ringIndex;
-  modalPhotoIndex = state.photoIndex;
-  const multiple = ringEls[modalRingIndex].photos.length > 1;
-  modalNavPrev.classList.toggle('is-hidden', !multiple);
-  modalNavNext.classList.toggle('is-hidden', !multiple);
-  fillModal();
+function fillModal() {
+  const state = ringEls[modalRingIndex].photos[modalPhotoIndex];
+  const entry = yearsData[modalRingIndex];
+  const photo = entry.photos[modalPhotoIndex];
+  fillModalFrom(photo, entry.year, state.img.src, state.img.alt);
+}
+
+// Shared tail of opening the modal, regardless of which path (tunnel
+// ring photo or flat standalone photo) is opening it.
+function activateModal() {
   lastFocusedEl = document.activeElement;
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
@@ -225,13 +235,53 @@ function openPhotoModal(state) {
   modalClose.focus();
 }
 
+function openPhotoModal(state) {
+  if (isModalOpen) return;
+  isModalOpen = true;
+  modalRingIndex = state.ringIndex;
+  modalPhotoIndex = state.photoIndex;
+  const multiple = ringEls[modalRingIndex].photos.length > 1;
+  modalCanNav = multiple;
+  modalNavPrev.classList.toggle('is-hidden', !multiple);
+  modalNavNext.classList.toggle('is-hidden', !multiple);
+  fillModal();
+  activateModal();
+}
+
+// The flat-mode equivalent of openPhotoModal() -- same popup, same
+// close button / backdrop-click / Escape / background-blur behavior,
+// just handed a photo directly instead of a tunnel ring index, and
+// always without the </> nav (see modalCanNav above). Exposed to
+// flat-v2.js as window.TunnelBridge.openPhotoModal().
+function openStandalonePhotoModal(photo, year, imgSrc, imgAlt) {
+  if (isModalOpen) return;
+  isModalOpen = true;
+  modalRingIndex = -1;
+  modalPhotoIndex = -1;
+  modalCanNav = false;
+  modalNavPrev.classList.add('is-hidden');
+  modalNavNext.classList.add('is-hidden');
+  fillModalFrom(photo, year, imgSrc, imgAlt);
+  activateModal();
+}
+
 function closePhotoModal() {
   if (!isModalOpen) return;
   isModalOpen = false;
   modalEl.classList.remove('is-open');
   modalEl.setAttribute('aria-hidden', 'true');
-  document.documentElement.style.overflow = '';
-  document.body.style.overflow = '';
+  // Flat mode holds documentElement/body overflow hidden itself for the
+  // entire time it's active (see showFlatChrome()/finalizeExit() in
+  // flat-v2.js), so its own canvas can pan/zoom without the page's
+  // native scroll fighting it. Clearing it unconditionally here would
+  // undo that the instant a flat-mode photo's modal closes, even though
+  // flat mode itself hasn't ended -- body.modal-open hides the mode
+  // switch (see style-v2.css) so the mode can't actually change while
+  // the modal is open, meaning whatever mode-flat reads right now is
+  // whichever mode was active for the whole time the modal was up.
+  const stillFlat = document.body.classList.contains('mode-flat');
+  document.documentElement.style.overflow = stillFlat ? 'hidden' : '';
+  document.body.style.overflow = stillFlat ? 'hidden' : '';
   document.body.classList.remove('modal-open');
   if (lastFocusedEl && lastFocusedEl.focus) lastFocusedEl.focus();
 }
@@ -250,6 +300,11 @@ function setupModalListeners() {
   document.addEventListener('keydown', event => {
     if (!isModalOpen) return;
     if (event.key === 'Escape') closePhotoModal();
+    // A standalone flat photo has no ring/index to page through --
+    // moveModalPhoto() would be operating on stale/invalid tunnel state,
+    // so the arrow keys are simply inert while one is open (matching
+    // the nav buttons themselves already being hidden for it).
+    if (!modalCanNav) return;
     if (event.key === 'ArrowLeft') moveModalPhoto(-1);
     if (event.key === 'ArrowRight') moveModalPhoto(1);
   });
@@ -312,4 +367,9 @@ window.TunnelBridge = {
   },
   setScrollToDepth: (depth) => { window.scrollTo(0, depth * pixelsPerYear()); },
   getViewportEl: () => document.getElementById('tunnel-viewport'),
+  // Lets flat-v2.js reuse this exact modal (same close button, backdrop
+  // click-to-close, Escape, background blur) for a flat-mode photo tile
+  // click -- always without the </> nav, since a flat tile isn't part of
+  // an orderable sequence. See openStandalonePhotoModal() above.
+  openPhotoModal: openStandalonePhotoModal,
 };

@@ -47,6 +47,15 @@ html.mode-flat-restore #scroll-hint {
   border-radius: 0 999px 999px 0;
 }
 
+/* The base stylesheet's backdrop blur (22px) reads as quite heavy,
+   especially now that this same modal opens over the flat canvas too.
+   Toned down here rather than in style.css -- same backdrop, same
+   click-to-close behavior, just a lighter blur. */
+.modal-backdrop {
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+}
+
 /* A small, unobtrusive hint in the bottom-right corner of the tunnel
    view -- no card/border, just text. #tunnel-viewport (in the base
    stylesheet) is a full-screen, OPAQUE white box, so this only has any
@@ -386,6 +395,16 @@ body.modal-open #timeline {
   stroke-width: 20px;
 }
 
+/* The group-name hover/focus popup's trigger area -- the whole disc
+   inside a group's innermost year ring (see addBoundaryRing() in
+   flat-v2.js), invisible but hit-testable everywhere within it
+   regardless of the transparent fill. Its parent .flat-ring-hit-v2 sets
+   pointer-events: none, so this has to switch it back on for itself. */
+.flat-group-hit-v2 {
+  fill: transparent;
+  pointer-events: all;
+}
+
 .flat-photo-v2 {
   position: absolute;
   top: 0;
@@ -552,16 +571,17 @@ body.modal-open #timeline {
   font: 400 44px/1 var(--font-mono);
   letter-spacing: 0.16em;
   cursor: default;
-  pointer-events: auto;
+  /* The hover popup's trigger is now the whole inner circle it sits
+     inside of (see .flat-group-hit-v2 below), not this text box, so the
+     label itself has to let the pointer pass straight through to that
+     circle -- otherwise its own rectangular footprint would be a dead
+     zone with no hover at all, right over the most obvious place to
+     point at. Keyboard access is unaffected: tabindex/focus don't go
+     through pointer hit-testing, so Tab still lands here directly. */
+  pointer-events: none;
   text-align: center;
   text-transform: uppercase;
   transition: opacity 140ms ease;
-}
-
-.flat-device-label-v2:hover,
-.flat-device-label-v2:focus-visible {
-  opacity: 0.72;
-  outline: 0;
 }
 
 /* Short description popup for a device group, shown on hovering (or

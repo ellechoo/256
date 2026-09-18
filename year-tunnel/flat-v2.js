@@ -1349,10 +1349,25 @@
     flyToGroupId: (id, duration) => {
       const group = deviceGroups.find(g => g.id === id);
       if (!group) return Promise.resolve();
+      const targetScale = scaleForGroup(group);
+      const targetTx = -group.x * baseScale * targetScale;
+      const targetTy = -group.y * baseScale * targetScale;
+      // Already sitting dead-center on this group at its natural focused
+      // scale (e.g. flatToTunnel's recenter step, called right after the
+      // camera had already settled there on its own) -- resolve instantly
+      // rather than replaying a zero-distance "fly". Tolerances are tight
+      // screen-space/scale epsilons, not a meaningful zone: this only
+      // short-circuits true no-op calls, it never swallows a real
+      // recenter from a genuinely off-center camera.
+      const already =
+        Math.abs(view.scale - targetScale) < 0.002 &&
+        Math.abs(view.tx - targetTx) < 1 &&
+        Math.abs(view.ty - targetTy) < 1;
       activeDeviceIndex = deviceGroups.indexOf(group);
       deviceName.textContent = group.label;
       setRevealedGroup(group.id);
-      flyTo(group.x, group.y, scaleForGroup(group), duration);
+      if (already) return Promise.resolve();
+      flyTo(group.x, group.y, targetScale, duration);
       return new Promise(resolve => setTimeout(resolve, duration));
     },
     prepareEntrance,

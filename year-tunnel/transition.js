@@ -50,6 +50,7 @@
   const FLAT_ENTRANCE_MS = 700;
   const FLAT_EXIT_MS = 520;
   const ALL_VIEW_PREZOOM_MS = 380;
+  const RECENTER_MS = 260;
 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -176,6 +177,19 @@
     }
 
     lastFlatTarget = window.Flat.getSettledTarget();
+
+    // If the user panned/zoomed away from the settled group's own
+    // centered/focused framing before hitting YEAR, snap the camera back
+    // to dead-center on it first. playExit() collapses that group's rings
+    // toward its fixed world-space position, not toward wherever the
+    // camera currently happens to be pointed -- so an off-center camera
+    // here would otherwise produce a visible jump right as the tunnel
+    // emerges expecting dead-center. flyToGroupId() no-ops instantly when
+    // the camera is already framed on this group, so this is a no-op in
+    // the common case where the user never moved.
+    if (lastFlatTarget.type === 'group' && lastFlatTarget.id) {
+      await window.Flat.flyToGroupId(lastFlatTarget.id, RECENTER_MS);
+    }
 
     // Phase 1: collapse the settled group back into the screen's
     // center; every other group flies back off-screen.

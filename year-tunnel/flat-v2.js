@@ -55,7 +55,7 @@
     allViewSouthNudgePx: 70,
 
     pinchIntensity: .010, trackpadPanIntensity: 1,
-    spinDegPerSecond: 3,
+    spinDegPerSecond: 1.5,
 
     // Preview aspect — must match script-v2.js's minAspect / maxAspect
     // so a photo previews the same shape in both modes.
@@ -85,9 +85,28 @@
   let years = [], isFlat = false, baseScale = 1;
   let contentBounds = { x: 0, y: 0 };
   let highlightedFill = null, gesture = null, activeDeviceIndex = -1, homeDeviceIndex = 0;
-  let deviceGroups = []; 
+  let deviceGroups = [];
   let ringSpinners = [], lastSpinTime = 0;
   let revealedGroupId = null;
+
+  // GPS toggle state (add-on). gpsTiles is every geotagged photo's tile
+  // element + continent, rebuilt alongside the rest of the view each time
+  // buildDeviceGroups() runs. gpsGroups is the same data regrouped by
+  // continent, chronological, and only for continents with 2+ photos --
+  // a lone photo (Oceania, currently) still gets recolored but has no
+  // thread, same as the rest of the dataset just doesn't have one yet.
+  // gpsPaths holds the one persistent <path> per continent thread so
+  // updateGpsLines() only ever rewrites its `d` attribute, never rebuilds
+  // DOM nodes on a 60fps loop. gpsExcluded holds the continents the user
+  // has clicked off in the color key -- their thread stops drawing (its
+  // <path> is set back to empty) until clicked again. It's a plain
+  // module-level Set rather than something rebuilt with the rest of the
+  // view, so a click's effect survives a resize/re-entering flat mode.
+  let gpsOn = false;
+  let gpsTiles = [];
+  let gpsGroups = new Map();
+  let gpsPaths = new Map();
+  let gpsExcluded = new Set();
 
   const pointers = new Map(), view = { scale: 1, tx: 0, ty: 0 };
   const sessionOffsets = new Map();
@@ -111,6 +130,30 @@
   const previousDeviceButton = deviceNav.querySelector('button:first-child');
   const deviceName = deviceNav.querySelector('span');
   const nextDeviceButton = deviceNav.querySelector('button:last-child');
+
+  // GPS toggle button + its color key (add-on). The key's rows are filled
+  // in by updateGpsKey() once the dataset is loaded, so it only ever lists
+  // continents that actually have a geotagged photo in this dataset rather
+  // than all seven regardless (nothing would ever explain a color that
+  // can't appear anywhere on screen).
+  const gpsToggle = document.createElement('button');
+  gpsToggle.type = 'button';
+  gpsToggle.id = 'flat-gps-toggle-v2';
+  gpsToggle.setAttribute('aria-pressed', 'false');
+  gpsToggle.textContent = 'GPS';
+
+  const gpsKey = document.createElement('div');
+  gpsKey.id = 'flat-gps-key-v2';
+  gpsKey.setAttribute('aria-hidden', 'true');
+
+  // Screen-space SVG overlay for the continent "threads" -- a sibling of
+  // #flat-stage rather than a child of it, since the thread endpoints are
+  // read straight off each tile's real on-screen position every frame
+  // (see updateGpsLines()) rather than recomputed from the stage's own
+  // world-space/zoom math, so it must NOT inherit the stage's transform.
+  const gpsLines = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  gpsLines.id = 'flat-gps-lines-v2';
+  gpsLines.setAttribute('aria-hidden', 'true');
 
   const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 
@@ -139,7 +182,52 @@
     if (/powershot|ixus|coolpix|cybershot|cyber-shot|dsc|stylus|finepix|dimage|optio|lumix|vlux|easyshare|photosmart|mavica|exilim|handycam|photopc|kodak|polaroid|benq|seiko|olympus|general imaging|traveler/.test(value)) return 'compact';
     return year < 2003 ? 'film' : 'other';
   }
-  
+
+  // GPS TOGGLE (add-on, flat mode only) -- classifies each geotagged photo
+  // into a continent from its raw "lat, lon" `location` string, purely by
+  // coordinate bounding boxes (no reverse-geocoding service, this is an
+  // offline dataset). Good enough to sort a photo into the right
+  // landmass; it is not meant to be authoritative at a coastline. Order
+  // matters -- more specific/overlap-prone boxes are checked first (e.g.
+  // Europe before the broad North America catch, so Iceland's longitude
+  // doesn't get swallowed by Greenland/Canada's).
+  //
+  // Antarctica has no photos in this dataset (nothing on Commons is dated
+  // September 3 there), so it isn't given a color slot at all -- classify
+  // still recognizes lat <= -60 as Antarctica for correctness, it just
+  // has nowhere to display since it's not in this list, and that freed
+  // slot went to Oceania instead of a color adjacent to Africa's green.
+  const CONTINENTS = [
+    ['europe', 'Europe', '#3987e5'],
+    ['northamerica', 'North America', '#d95926'],
+    ['asia', 'Asia', '#d55181'],
+    ['southamerica', 'South America', '#c98500'],
+    ['africa', 'Africa', '#008300'],
+    ['oceania', 'Oceania', '#9085e9'],
+  ];
+  const CONTINENT_COLOR = new Map(CONTINENTS.map(([id, , color]) => [id, color]));
+
+  function classifyContinent(lat, lon) {
+    if (lat <= -60) return 'antarctica';
+    if (lat >= 34 && lat <= 72 && lon >= -25 && lon <= 60) return 'europe';
+    if (lat >= -60 && lat <= 13 && lon >= -82 && lon <= -34) return 'southamerica';
+    if (lat >= 5 && lon <= -30) return 'northamerica';
+    if (lat >= -35 && lat <= 37 && lon >= -20 && lon <= 52) return 'africa';
+    if (lat >= -50 && lat <= -8 && ((lon >= 110 && lon <= 180) || (lon >= -180 && lon <= -150))) return 'oceania';
+    return 'asia';
+  }
+
+  // Dataset locations are always a plain "lat, lon" string under `location`
+  // -- `gps` is kept as a fallback key only for forward-compatibility with
+  // however fillModal() in script-v2.js reads a photo's location.
+  function parseLocation(photo) {
+    const raw = photo.location || photo.gps;
+    if (!raw) return null;
+    const m = /^\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*$/.exec(raw);
+    if (!m) return null;
+    return { lat: parseFloat(m[1]), lon: parseFloat(m[2]) };
+  }
+
   // Takes the specific fill <path> for the hovered ring (there's one
   // per year, living in that group's shared fills layer -- see
   // buildRingFills) rather than the ring div itself, since the fill is
@@ -340,7 +428,28 @@
       event.stopPropagation();
       focusDevice(activeDeviceIndex + 1);
     });
-    viewport.append(preview, devicePreview, deviceNav);
+    gpsToggle.addEventListener('click', event => {
+      event.stopPropagation();
+      gpsOn = !gpsOn;
+      gpsToggle.setAttribute('aria-pressed', String(gpsOn));
+      document.body.classList.toggle('gps-on', gpsOn);
+      gpsKey.classList.toggle('is-visible', gpsOn);
+      gpsKey.setAttribute('aria-hidden', String(!gpsOn));
+    });
+    // Delegated rather than bound per-row, since updateGpsKey() rebuilds
+    // the key's rows from scratch (innerHTML) every time the view does --
+    // a listener on the stable #flat-gps-key-v2 container survives that,
+    // where one attached to an individual row wouldn't.
+    gpsKey.addEventListener('click', event => {
+      event.stopPropagation();
+      const row = event.target.closest('[data-continent]');
+      if (!row) return;
+      const continent = row.dataset.continent;
+      if (gpsExcluded.has(continent)) gpsExcluded.delete(continent);
+      else gpsExcluded.add(continent);
+      row.setAttribute('aria-pressed', String(!gpsExcluded.has(continent)));
+    });
+    viewport.append(preview, devicePreview, deviceNav, gpsToggle, gpsKey, gpsLines);
   }
 
   // Per-ring start angle. Stable within a session, fresh on reload.
@@ -458,13 +567,37 @@
       tile.style.marginLeft = -tileSize / 2 + 'px';
       tile.style.marginTop = -tileSize / 2 + 'px';
 
-      tile.style.backgroundColor = '#ffffff';
       tile.dataset.group = groupId;
 
       const img = document.createElement('img');
       img.alt = '';
       img.dataset.src = 'photos/' + encodeURIComponent(photo.file);
       tile.appendChild(img);
+
+      // GPS toggle add-on: a geotagged photo's tile gets a CSS custom
+      // property holding its continent's color. style-v2.css reads it
+      // (via body.gps-on rules) to recolor the WHOLE tile while it's
+      // just a plain circle, and to recolor its border instead once it's
+      // the revealed group's actual photo (a solid fill would be
+      // invisible under the real image). The tile's plain default
+      // background (white, whenever GPS mode is off or a photo has no
+      // location) lives in style-v2.css now instead of being set here,
+      // so there's nothing to override when GPS mode is off.
+      const coord = parseLocation(photo);
+      if (coord) {
+        const continent = classifyContinent(coord.lat, coord.lon);
+        const color = CONTINENT_COLOR.get(continent);
+        // classifyContinent() can still return 'antarctica' (correct --
+        // lat <= -60 really is Antarctica), but it has no color slot
+        // since nothing in this dataset is ever there; skip rather than
+        // set an invalid custom-property value on the rare chance it
+        // ever does classify that way.
+        if (color) {
+          tile.dataset.continent = continent;
+          tile.style.setProperty('--tile-continent-color', color);
+          gpsTiles.push({ el: tile, year: entry.year, continent });
+        }
+      }
 
       const angle = 360 / entry.photos.length * photoIndex + rotationOffset;
 
@@ -602,6 +735,7 @@
   function buildDeviceGroups() {
     deviceGroups = [];
     activeDeviceIndex = -1;
+    gpsTiles = [];
     const groups = CATEGORIES.map(([id, label], order) => ({ id, label, order, byYear: new Map() }));
     const groupById = new Map(groups.map(group => [group.id, group]));
     years.forEach(entry => entry.photos.forEach(photo => {
@@ -669,6 +803,94 @@
     // packing algorithm happened to settle it.
     const filmIndex = deviceGroups.findIndex(g => g.id === 'film');
     homeDeviceIndex = filmIndex >= 0 ? filmIndex : 0;
+
+    rebuildGpsGroups();
+    updateGpsKey();
+  }
+
+  // Regroups gpsTiles (rebuilt just above, fresh DOM every time) by
+  // continent, chronological, keeping only continents with 2+ geotagged
+  // photos -- a single photo (Oceania, currently) still gets its core dot
+  // via CSS, it just has nothing to draw a line to. Also drops every old
+  // <path>: buildDeviceGroups() replaces the whole stage's DOM on every
+  // call (dataset load, resize, re-entering flat mode), so any <path>
+  // left over from before would be threading tile elements that no longer
+  // exist.
+  function rebuildGpsGroups() {
+    const byContinent = new Map();
+    gpsTiles.forEach(t => {
+      if (!byContinent.has(t.continent)) byContinent.set(t.continent, []);
+      byContinent.get(t.continent).push(t);
+    });
+    gpsGroups = new Map();
+    byContinent.forEach((list, continent) => {
+      if (list.length < 2) return;
+      list.sort((a, b) => a.year - b.year);
+      gpsGroups.set(continent, list);
+    });
+    gpsLines.replaceChildren();
+    gpsPaths = new Map();
+  }
+
+  // Fills in the color key from whichever continents are actually present
+  // in this dataset (in the fixed CONTINENTS order), rather than always
+  // listing all six -- so it never explains a color that has nothing to
+  // show for it. A continent with just one photo (no thread) still gets a
+  // row, since its tile color alone is still something the key should
+  // name. Each row is its own <button>, clickable to toggle that
+  // continent's thread on/off (see the delegated click handler in
+  // buildControls()) -- aria-pressed carries the selected/deselected
+  // state and is what style-v2.css dims on. Rebuilding this wholesale
+  // (rather than patching individual rows) is fine even though it runs on
+  // every buildDeviceGroups() call: gpsExcluded is what actually holds
+  // the user's chosen state, and it isn't touched here, so a rebuilt row
+  // just re-renders the same selected/deselected look it already had.
+  function updateGpsKey() {
+    const present = new Set(gpsTiles.map(t => t.continent));
+    gpsKey.innerHTML = CONTINENTS
+      .filter(([id]) => present.has(id))
+      .map(([id, label, color]) =>
+        '<button type="button" class="flat-gps-key-row-v2" data-continent="' + id + '" aria-pressed="' + String(!gpsExcluded.has(id)) + '">' +
+          '<span class="flat-gps-key-swatch-v2" style="background:' + color + '"></span>' +
+          '<span>' + label + '</span>' +
+        '</button>'
+      ).join('');
+  }
+
+  // Reads each geotagged tile's REAL current screen position (however it
+  // got there -- spin, pan, zoom, or an entrance/exit flight, all read
+  // straight off the rendered DOM rather than re-derived from world-space
+  // math) and redraws that continent's thread through them in year order.
+  // Called every frame from spinLoop() while the toggle is on, which is
+  // the whole point: the same continuous tile motion that already existed
+  // just carries the lines along with it.
+  function updateGpsLines() {
+    if (!gpsGroups.size) return;
+    gpsGroups.forEach((list, continent) => {
+      let path = gpsPaths.get(continent);
+      if (gpsExcluded.has(continent)) {
+        // Deselected in the key: clear the path rather than removing the
+        // element, so re-selecting it doesn't need to recreate anything
+        // and the very next frame just fills `d` back in.
+        if (path) path.setAttribute('d', '');
+        return;
+      }
+      if (!path) {
+        path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', 'flat-gps-thread-v2');
+        path.setAttribute('stroke', CONTINENT_COLOR.get(continent));
+        gpsLines.appendChild(path);
+        gpsPaths.set(continent, path);
+      }
+      let d = '';
+      list.forEach((tile, i) => {
+        const rect = tile.el.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        d += (i === 0 ? 'M ' : 'L ') + x + ' ' + y + ' ';
+      });
+      path.setAttribute('d', d.trim());
+    });
   }
 
   function buildView() {
@@ -700,6 +922,10 @@
             ' translateY(' + -spinner.radius + 'px)';
         });
       });
+      // Runs after the spin/pan/zoom writes just above, so this is one
+      // batched layout read per frame (getBoundingClientRect inside
+      // updateGpsLines) rather than interleaved read/write thrashing.
+      if (gpsOn) updateGpsLines();
     }
     requestAnimationFrame(spinLoop);
   }
@@ -738,7 +964,7 @@
     viewport.classList.add('is-dragging');
   }
   function onPointerDown(event) {
-    if (!isFlat || event.target.closest('#flat-device-nav-v2')) return;
+    if (!isFlat || event.target.closest('#flat-device-nav-v2') || event.target.closest('#flat-gps-toggle-v2') || event.target.closest('#flat-gps-key-v2')) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     try { viewport.setPointerCapture(event.pointerId); } catch (_) {}
     if (pointers.size === 1) {

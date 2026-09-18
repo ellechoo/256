@@ -395,8 +395,13 @@ body.modal-open #timeline {
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
+  /* Plain white by default -- this used to be set inline by flat-v2.js
+     on every tile; it lives here now so the GPS-on rules further down
+     can override it with a simple, ordinary CSS specificity bump instead
+     of having to fight an inline style. */
+  background-color: #fff;
   transform-origin: center center;
-  transition: opacity 160ms ease, transform 120ms ease, box-shadow 120ms ease;
+  transition: opacity 160ms ease, transform 120ms ease, box-shadow 120ms ease, background-color 160ms ease;
 }
 
 /* The white border is painted with a ::after overlay instead of a
@@ -613,4 +618,173 @@ body.modal-open #timeline {
    this scale. */
 #flat-viewport.is-all-view .flat-ring-outline-v2 {
   stroke-width: 3;
+}
+
+/* GPS TOGGLE (add-on) -- everything below is new, nothing above this
+   point in the file was changed for it. Built and appended by
+   flat-v2.js the same way #flat-device-nav-v2 already is, so it lives
+   entirely inside #flat-viewport and only ever shows in flat/device
+   mode -- the tunnel/year view never touches any of this. */
+
+#flat-gps-toggle-v2 {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 12;
+  padding: 10px 16px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 999px;
+  color: #fff;
+  font: 600 11px/1 var(--font-sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+#flat-gps-toggle-v2:hover {
+  background: #262626;
+}
+
+/* Pressed state inverts to solid white, same "this one is active" cue
+   the YEAR/DEVICE switch already uses -- just recolored for a single
+   standalone button instead of a two-way pill. */
+#flat-gps-toggle-v2[aria-pressed="true"] {
+  background: #fff;
+  border-color: #fff;
+  color: #111;
+}
+
+/* The key only ever lists continents updateGpsKey() (flat-v2.js) found
+   at least one geotagged photo for, and only shows at all while the
+   toggle is on -- a key explaining colors the user hasn't turned on
+   yet would just be clutter sitting under an inactive button. */
+#flat-gps-key-v2 {
+  position: absolute;
+  top: 68px;
+  left: 24px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 14px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+#flat-gps-key-v2.is-visible {
+  opacity: 1;
+}
+
+/* Each row is a <button> (see updateGpsKey() in flat-v2.js) so it can be
+   clicked to toggle that continent's thread on/off -- reset off the
+   browser's default button chrome first, then laid out the same as
+   before. aria-pressed carries the selected state; a deselected row
+   dims so it's visually obvious which threads are currently showing. */
+.flat-gps-key-row-v2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  opacity: 1;
+  transition: opacity 140ms ease;
+}
+
+.flat-gps-key-row-v2:hover {
+  opacity: 0.75;
+}
+
+.flat-gps-key-row-v2[aria-pressed="false"] {
+  opacity: 0.32;
+}
+
+.flat-gps-key-row-v2[aria-pressed="false"]:hover {
+  opacity: 0.5;
+}
+
+.flat-gps-key-swatch-v2 {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.flat-gps-key-row-v2 span:last-child {
+  color: #fff;
+  font: 400 11px/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* Recoloring a geotagged tile, driven by the --tile-continent-color
+   custom property flat-v2.js sets on the tile itself (see addRing()).
+   Two different places get the color depending on what's actually
+   visible on the tile right now:
+     - Not revealed (just a plain circle, most tiles most of the time):
+       the WHOLE circle takes the continent color.
+     - Revealed (the real photo fills the circle edge to edge): a solid
+       fill would be invisible under it, so the color moves to the
+       ::after border overlay instead (see the plain white version of
+       this rule above) -- same border, just tinted instead of white.
+   Every photo WITHOUT location data recedes instead, so the geotagged
+   ones read as the ones "lit up" against the rest -- opacity is set on
+   the tile itself, so it applies whether that tile is currently a plain
+   circle or (once revealed) the actual photo image, without needing a
+   separate rule for each. */
+body.gps-on .flat-photo-v2[data-continent] {
+  background-color: var(--tile-continent-color);
+}
+
+body.gps-on .flat-photo-v2[data-continent].is-revealed::after {
+  box-shadow: inset 0 0 0 3px var(--tile-continent-color);
+}
+
+body.gps-on .flat-photo-v2:not([data-continent]) {
+  opacity: 0.5;
+}
+
+/* Screen-space overlay for the continent threads -- see updateGpsLines()
+   in flat-v2.js for why this reads real getBoundingClientRect positions
+   every frame instead of living inside the zoomed/panned #flat-stage.
+   Sits above the rings/tiles themselves (no explicit z-index on those)
+   but below the hover popups and nav chrome (z-index 12-21). */
+#flat-gps-lines-v2 {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+body.gps-on #flat-gps-lines-v2 {
+  opacity: 1;
+}
+
+/* One <path> per continent (built lazily in updateGpsLines), a soft
+   translucent thread rather than a hard line so a dense cluster of
+   crossing threads doesn't turn into visual noise. non-scaling-stroke
+   keeps it a constant, crisp screen-pixel width at any zoom level, same
+   as the ring outlines already do. */
+.flat-gps-thread-v2 {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: 0.55;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (max-width: 640px) {
+  #flat-gps-key-v2 { display: none; }
 }

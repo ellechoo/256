@@ -6,7 +6,29 @@
   const modeSwitch = document.getElementById('mode-switch');
   const modeSwitchYear = document.getElementById('mode-switch-year');
   const modeSwitchDevice = document.getElementById('mode-switch-device');
-  if (!viewport || !stage || !modeSwitch || !modeSwitchYear || !modeSwitchDevice) return;
+  const modeSwitchHighlight = document.getElementById('mode-switch-highlight');
+  if (!viewport || !stage || !modeSwitch || !modeSwitchYear || !modeSwitchDevice || !modeSwitchHighlight) return;
+
+  // Slides/resizes the black pill behind whichever word is currently
+  // pressed to exactly match that button's own box, so "Device" (the
+  // longer word) gets a visibly wider pill than "Year". Measured live
+  // off the real rendered buttons rather than hardcoded, so it's
+  // correct regardless of font metrics. offsetLeft/offsetWidth are
+  // relative to #mode-switch (the nearest positioned ancestor), which
+  // is exactly the coordinate space #mode-switch-highlight is
+  // positioned in, so no further conversion is needed.
+  function syncModeSwitchHighlight() {
+    const active = modeSwitchDevice.getAttribute('aria-pressed') === 'true' ? modeSwitchDevice : modeSwitchYear;
+    modeSwitchHighlight.style.left = active.offsetLeft + 'px';
+    modeSwitchHighlight.style.width = active.offsetWidth + 'px';
+  }
+  syncModeSwitchHighlight();
+  // Re-measure once more after the page finishes loading and once web
+  // fonts swap in -- Inter loads with font-display: swap, so the very
+  // first measurement above may be taken against fallback-font metrics
+  // that are a few pixels off from Inter's actual glyph widths.
+  window.addEventListener('load', syncModeSwitchHighlight);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncModeSwitchHighlight);
 
   const CONFIG = {
     design: 6000, allInner: .05, allOuter: .46, packPaddingPx: 110, packIterations: 420,
@@ -811,6 +833,7 @@
     modeSwitch.classList.add('is-device');
     modeSwitchYear.setAttribute('aria-pressed', 'false');
     modeSwitchDevice.setAttribute('aria-pressed', 'true');
+    syncModeSwitchHighlight();
     isFlat = true;
   }
 
@@ -1029,6 +1052,7 @@
     modeSwitch.classList.remove('is-device');
     modeSwitchYear.setAttribute('aria-pressed', 'true');
     modeSwitchDevice.setAttribute('aria-pressed', 'false');
+    syncModeSwitchHighlight();
     isFlat = false;
   }
 

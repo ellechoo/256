@@ -144,6 +144,11 @@ function buildTimeline() {
     dot.setAttribute('aria-label', String(entry.year));
     dot.innerHTML = '<span class="tl-label">' + entry.year + '</span>';
     dot.addEventListener('click', () => {
+      // If a photo is open, clicking a year on the rail should close
+      // it and jump straight there, rather than requiring a separate
+      // close first (the rail is the one thing still meant to be
+      // usable -- see body.modal-open in style-v2.css).
+      if (isModalOpen) closePhotoModal();
       const lap = Math.floor((currentDepth - CONFIG.yearStartOffset) / yearsData.length);
       window.scrollTo({ top: (lap * yearsData.length + index + CONFIG.initialDepthOffset) * pixelsPerYear(), behavior: 'smooth' });
     });
@@ -214,6 +219,7 @@ function openPhotoModal(state) {
   lastFocusedEl = document.activeElement;
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
   modalEl.classList.add('is-open');
   modalEl.setAttribute('aria-hidden', 'false');
   modalClose.focus();
@@ -226,6 +232,7 @@ function closePhotoModal() {
   modalEl.setAttribute('aria-hidden', 'true');
   document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
+  document.body.classList.remove('modal-open');
   if (lastFocusedEl && lastFocusedEl.focus) lastFocusedEl.focus();
 }
 

@@ -43,28 +43,55 @@ body.mode-flat #flat-viewport.is-dragging { cursor: grabbing; }
   white-space: nowrap;
 }
 
+/* The switch itself: YEAR and DEVICE sit directly inside it as two
+   buttons, both set in exactly the same type as "ORGANIZE SEPTEMBER 3
+   BY" to its left so the whole line reads as one continuous piece of
+   type. The black pill behind the active word is its own floating
+   element (#mode-switch-highlight) rather than a background on the
+   button itself -- flat-v2.js measures the active button's actual box
+   each time the mode changes and sets this element's left/width to
+   match, so the pill is exactly as wide as "Year" or "Device" (Device
+   being the longer word gets the wider pill) and slides smoothly
+   between the two rather than snapping. */
 #mode-switch {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(34, 34, 34, 0.08);
+}
+
+#mode-switch-highlight {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: 0;
+  border-radius: 999px;
+  background: #000;
+  pointer-events: none;
+  transition: left 220ms cubic-bezier(.2, .8, .2, 1), width 220ms cubic-bezier(.2, .8, .2, 1);
 }
 
 #mode-switch button {
-  padding: 0;
+  position: relative;
+  z-index: 1;
+  padding: 7px 14px;
   border: 0;
   background: none;
-  color: rgba(34, 34, 34, 0.5);
+  color: #222;
   font: 600 11px/1 var(--font-sans);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
   transition: color 160ms ease;
 }
 
-#mode-switch button:hover:not(:disabled) { color: #222; }
+#mode-switch button:hover:not(:disabled):not([aria-pressed="true"]) { color: #000; }
 
 #mode-switch button[aria-pressed="true"] {
-  color: #222;
+  color: #fff;
 }
 
 #mode-switch button:disabled {
@@ -72,37 +99,113 @@ body.mode-flat #flat-viewport.is-dragging { cursor: grabbing; }
   opacity: .6;
 }
 
-#mode-switch-track {
-  position: relative;
-  display: block;
-  width: 34px;
-  height: 18px;
-  border-radius: 999px;
-  background: rgba(34, 34, 34, 0.14);
-}
-
-#mode-switch-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #222;
-  transition: transform 200ms ease;
-}
-
-#mode-switch.is-device #mode-switch-knob {
-  transform: translateX(16px);
-}
-
 /* While transition.js is animating the tunnel<->flat switch, keep the
    tunnel-only left timeline rail out of the way — both viewports may
    be mid-swap and its chrome doesn't apply to what's on screen at that
    moment. #mode-nav stays put and visible; it's shared chrome, not
-   tunnel-only, and its own buttons are disabled during the animation. */
+   tunnel-only, and its own buttons are disabled during the animation.
+   Faded via opacity (with the transition living on #timeline itself,
+   below) rather than an instant visibility:hidden snap, so leaving
+   flat mode has the rail ease back in once the tunnel lands instead of
+   just popping into view the moment the transition ends. The dots'
+   own pointer-events are switched off too, since pointer-events isn't
+   implicitly inherited-and-blocked the way opacity is -- each dot sets
+   its own pointer-events:auto in the base stylesheet. */
 body.mode-transitioning #timeline {
-  visibility: hidden;
+  opacity: 0;
+}
+
+body.mode-transitioning .tl-dot {
+  pointer-events: none;
+}
+
+/* While the tunnel photo modal is open, the top-center mode nav just
+   competes with it for attention -- hide it and let the left-hand year
+   rail (#timeline) be the way to change years instead. The modal's
+   full-viewport backdrop normally sits above #timeline (z-index 50 vs
+   3) and would swallow clicks meant for a dot, so it's raised above
+   the modal here too. The photo modal is tunnel-only, so this never
+   needs a flat-mode variant. */
+body.modal-open #mode-nav {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.modal-open #timeline {
+  z-index: 55;
+}
+
+/* Larger and taller than the base rail, with a bit more breathing room
+   between dots (justify-content: space-between in the base stylesheet
+   means a taller rail automatically spreads a fixed number of dots
+   further apart). Opacity transition here is what makes the
+   mode-transitioning fade above (and the modal-open hide) actually
+   ease in/out instead of snapping. */
+#timeline {
+  height: 80vh;
+  transition: opacity 320ms ease;
+}
+
+.tl-dot {
+  width: 20px;
+  height: 20px;
+}
+
+.tl-dot::after {
+  width: 8px;
+  height: 8px;
+  /* Explicitly re-list every property the active state below changes
+     (size, shape, rotation), not just background -- the base
+     stylesheet only transitions background/transform, so without
+     this, turning is-active off snapped the dot back to its small
+     round resting size instantly while only its color/label faded,
+     which read as the old year "popping" small again for a beat
+     before it finished disappearing. */
+  transition: background 0.18s ease, transform 0.18s ease,
+    width 0.18s ease, height 0.18s ease, border-radius 0.18s ease;
+}
+
+/* Current year: the plain round dot becomes a teardrop pointing right
+   at its label, instead of just a bigger filled circle. One shape,
+   no seams to line up: a rounded square with a single sharp corner,
+   rotated so that corner aims due right. Leaving the bottom-right
+   corner sharp points it down-right (45deg); rotating -45deg swings
+   that point the rest of the way to straight right. */
+.tl-dot.is-active::after {
+  width: 11px;
+  height: 11px;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(-45deg);
+}
+
+.tl-dot.is-active:hover::after {
+  transform: rotate(-45deg) scale(1.15);
+}
+
+/* Every label -- the always-on active year and the hover-revealed
+   others alike -- now shares one look: larger, and set in VCR OSD
+   Mono (the project's existing display monospace, already used for
+   photo titles in the modal) rather than the base stylesheet's small
+   Inter micro-label. It ships as a single weight, so no font-weight
+   beyond 400 (heavier would just get synthetically faux-bolded and
+   look rough). The two states are told apart only by opacity now --
+   1 for the current year, the base stylesheet's existing 0.75 on
+   hover for every other year -- not by size or typeface. */
+.tl-label {
+  left: 22px;
+  font-size: 17px;
+  font-weight: 400;
+  color: #111;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  transition: opacity 0.15s ease, color 0.15s ease, left 0.15s ease;
+}
+
+/* Nudged a little further right than a resting label, to clear the
+   teardrop's point. */
+.tl-dot.is-active .tl-label {
+  left: 26px;
+  opacity: 1;
 }
 
 .flat-ring-v2 {
